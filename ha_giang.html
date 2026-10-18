@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lịch trình Hà Giang 20–24/01</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700&display=swap">
+<style>
+  :root {
+    --bg: #f3f6f5;
+    --surface: #ffffff;
+    --ink: #14282b;
+    --muted: #55696c;
+    --line: #d6e0df;
+    --accent: #0e6f73;
+    --accent-soft: #dcefee;
+    --warn: #7a4f00;
+    --warn-soft: #fbf1d9;
+    --radius: 10px;
+    --font: "Be Vietnam Pro", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    color-scheme: light dark;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f1b1d;
+      --surface: #16272a;
+      --ink: #e6efef;
+      --muted: #9bb0b2;
+      --line: #27403f;
+      --accent: #5fc4c4;
+      --accent-soft: #17383a;
+      --warn: #e8c26a;
+      --warn-soft: #2e2713;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 400 16px/1.6 var(--font);
+  }
+  a { color: var(--accent); }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .wrap { max-width: 960px; margin: 0 auto; padding: 0 20px; }
+
+  /* Hero */
+  .hero { padding: 48px 0 28px; }
+  .hero h1 { margin: 0 0 8px; font-size: clamp(1.75rem, 4vw, 2.5rem); line-height: 1.2; font-weight: 700; }
+  .hero p { margin: 0; max-width: 60ch; color: var(--muted); }
+
+  .route { display: flex; margin: 36px 0 0; padding: 0; list-style: none; }
+  .route li {
+    position: relative;
+    flex: 1;
+    padding-top: 20px;
+    font-size: .875rem;
+    font-weight: 500;
+  }
+  .route li::before {
+    content: "";
+    position: absolute; top: 5px; left: 0; right: 0;
+    height: 2px; background: var(--line);
+  }
+  .route li:last-child::before { right: 50%; }
+  .route li::after {
+    content: "";
+    position: absolute; top: 0; left: 0;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 0 4px var(--bg);
+  }
+
+  /* Day navigation */
+  .days {
+    position: sticky; top: 0; z-index: 5;
+    background: color-mix(in srgb, var(--bg) 92%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--line);
+  }
+  .days .wrap { display: flex; gap: 8px; padding-top: 10px; padding-bottom: 10px; overflow-x: auto; }
+  .days a {
+    flex: none;
+    padding: 6px 14px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--surface);
+    color: var(--ink);
+    font-size: .875rem;
+    font-weight: 500;
+    text-decoration: none;
+  }
+  .days a:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* Day sections */
+  .day {
+    display: grid;
+    grid-template-columns: 150px 1fr;
+    gap: 24px;
+    padding: 36px 0;
+    border-bottom: 1px solid var(--line);
+    scroll-margin-top: 52px;
+  }
+  .day:last-child { border-bottom: 0; }
+  .day-head { align-self: start; position: sticky; top: 76px; }
+  .day-head .date { display: flex; align-items: baseline; gap: 8px; color: var(--accent); }
+  .day-head .date b { font-size: 3rem; line-height: 1; font-weight: 700; }
+  .day-head .date span { font-weight: 500; }
+  .day-head h2 { margin: 10px 0 2px; font-size: 1.125rem; }
+  .day-head p { margin: 0; color: var(--muted); font-size: .875rem; }
+
+  .stops { display: grid; gap: 16px; margin: 0; padding: 0; list-style: none; }
+  .stop {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    overflow: hidden;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+  }
+  .stop.plain { grid-template-columns: 1fr; }
+
+  .shot {
+    position: relative;
+    margin: 0;
+    min-height: 170px;
+    background: linear-gradient(135deg, var(--accent-soft), var(--line));
+  }
+  .shot img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .shot .ph {
+    position: absolute; inset: 0;
+    display: grid; place-items: center;
+    padding: 12px;
+    color: var(--muted); font-size: .8125rem; text-align: center;
+  }
+
+  .body { padding: 16px 20px; }
+  .when {
+    display: inline-block;
+    margin: 0 0 6px;
+    padding: 2px 10px;
+    border-radius: 999px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-size: .8125rem;
+    font-weight: 700;
+  }
+  .body h3 { margin: 0 0 4px; font-size: 1.125rem; line-height: 1.35; }
+  .body p { margin: 0; }
+  .body .desc { color: var(--muted); font-size: .9375rem; }
+  .note {
+    margin-top: 10px !important;
+    padding: 8px 12px;
+    border-left: 3px solid var(--warn);
+    border-radius: 0 6px 6px 0;
+    background: var(--warn-soft);
+    color: var(--warn);
+    font-size: .875rem;
+  }
+  .more { display: inline-block; margin-top: 10px; font-size: .875rem; font-weight: 500; }
+
+  footer { padding: 24px 0 48px; color: var(--muted); font-size: .8125rem; }
+
+  @media (max-width: 720px) {
+    .day { grid-template-columns: 1fr; gap: 16px; padding: 28px 0; }
+    .day-head { position: static; display: flex; align-items: baseline; gap: 12px; }
+    .day-head h2 { margin: 0; }
+    .stop { grid-template-columns: 1fr; }
+    .shot { min-height: 0; aspect-ratio: 16 / 9; }
+    .route li { font-size: .75rem; }
+  }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  @media print {
+    .days { display: none; }
+    .day-head { position: static; }
+    .stop { break-inside: avoid; }
+    .more { display: none; }
+  }
+
+  /* Chỉnh sửa */
+  :root { --danger: #b3261e; }
+  @media (prefers-color-scheme: dark) { :root { --danger: #ff8a80; } }
+
+  .days .wrap { align-items: center; overflow: visible; }
+  .days .links { display: flex; flex: 1; gap: 8px; min-width: 0; overflow-x: auto; }
+  body.editing .days { border-bottom-color: var(--accent); }
+
+  .edit-only { display: none; }
+  .editing .edit-only { display: inline-flex; }
+
+  .btn {
+    flex: none;
+    padding: 6px 14px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--surface);
+    color: var(--ink);
+    font: 500 .875rem var(--font);
+    cursor: pointer;
+  }
+  .btn:hover { border-color: var(--accent); color: var(--accent); }
+  .btn.primary { border-color: var(--accent); background: var(--accent); color: var(--bg); }
+  .btn.primary:hover { color: var(--bg); opacity: .9; }
+  .btn.danger:hover { border-color: var(--danger); color: var(--danger); }
+  .btn.sm { padding: 3px 10px; font-size: .8125rem; }
+
+  .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin-top: 10px; }
+  .actions .more { margin-top: 0; }
+  .tools { gap: 6px; margin-left: auto; }
+  .day-add { margin-top: 12px; }
+  #reset { margin-top: 12px; }
+
+  dialog {
+    width: min(560px, calc(100% - 32px));
+    max-height: calc(100% - 32px);
+    padding: 0;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--surface);
+    color: var(--ink);
+  }
+  dialog::backdrop { background: rgb(8 20 22 / .55); }
+  .dlg { display: grid; gap: 14px; padding: 20px; }
+  .dlg h2 { margin: 0; font-size: 1.125rem; }
+  .dlg-actions { display: flex; justify-content: flex-end; gap: 8px; }
+  .field { display: grid; gap: 4px; font-size: .875rem; font-weight: 500; }
+  .field input, .field textarea {
+    padding: 8px 10px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--bg);
+    color: var(--ink);
+    font: 400 1rem var(--font);
+  }
+  .field textarea { min-height: 72px; resize: vertical; }
+  .row { display: flex; gap: 8px; }
+  .row input { flex: 1; min-width: 0; }
+  .hint { margin: 0; color: var(--muted); font-size: .8125rem; font-weight: 400; }
+  .error { margin: 0; color: var(--danger); font-size: .875rem; }
+
+  .thumbs { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; }
+  .thumb {
+    aspect-ratio: 4 / 3;
+    padding: 0;
+    overflow: hidden;
+    border: 2px solid var(--line);
+    border-radius: 8px;
+    background: var(--accent-soft);
+    color: var(--muted);
+    font: 500 .8125rem var(--font);
+    cursor: pointer;
+  }
+  .thumb img { display: block; width: 100%; height: 100%; object-fit: cover; }
+  .thumb[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
+</style>
+</head>
+<body>
+  <header class="hero">
+    <div class="wrap">
+      <h1>Hà Giang – Đồng Văn – Mèo Vạc</h1>
+      <p>Hành trình từ 20/01 đến 24/01. Xe xuất phát đúng 20:00 tại Phú Thái, Hải Dương.</p>
+      <ol class="route" aria-label="Tuyến đường chính">
+        <li>Hà Giang</li>
+        <li>Quản Bạ</li>
+        <li>Đồng Văn</li>
+        <li>Lũng Cú</li>
+        <li>Mèo Vạc</li>
+      </ol>
+    </div>
+  </header>
+
+  <nav class="days" aria-label="Chọn ngày"><div class="wrap"><div class="links" id="day-nav"></div><button type="button" class="btn" id="toggle-edit" aria-pressed="false">Chỉnh sửa</button></div></nav>
+  <main class="wrap" id="itinerary"></main>
+
+  <footer>
+    <div class="wrap">Ảnh được tải từ Wikipedia và Wikimedia Commons khi mở trang, cần có kết nối mạng. Nếu ảnh chưa khớp địa danh, dùng liên kết “Xem thêm ảnh” trên từng mục.</div>
+    <div class="wrap"><button type="button" class="btn edit-only" id="reset">Khôi phục lịch trình gốc</button></div>
+  </footer>
+
+  <dialog id="pw-dialog" aria-labelledby="pw-title">
+    <form class="dlg" id="pw-form">
+      <h2 id="pw-title">Nhập mật khẩu để chỉnh sửa</h2>
+      <label class="field">Mật khẩu
+        <input type="password" id="pw-input" autocomplete="off" required>
+      </label>
+      <p class="error" id="pw-error" hidden>Mật khẩu không đúng.</p>
+      <div class="dlg-actions">
+        <button type="button" class="btn" data-close>Hủy</button>
+        <button type="submit" class="btn primary">Mở khóa</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="editor-dialog" aria-labelledby="editor-title">
+    <form class="dlg" id="editor-form">
+      <h2 id="editor-title">Thêm mục</h2>
+      <label class="field">Thời gian
+        <input name="time" placeholder="Ví dụ: 06:00, Sáng, Chiều">
+      </label>
+      <label class="field">Tên địa điểm
+        <input name="title" required>
+      </label>
+      <label class="field">Mô tả
+        <textarea name="desc"></textarea>
+      </label>
+      <label class="field">Lưu ý (không bắt buộc)
+        <input name="note">
+      </label>
+      <div class="field">
+        <label for="kw">Ảnh đại diện</label>
+        <div class="row">
+          <input id="kw" name="keyword" placeholder="Từ khóa tìm ảnh">
+          <button type="button" class="btn" id="search-images">Tìm ảnh</button>
+        </div>
+        <p class="hint" id="image-status"></p>
+        <div class="thumbs" id="thumbs"></div>
+      </div>
+      <div class="dlg-actions">
+        <button type="button" class="btn" data-close>Hủy</button>
+        <button type="submit" class="btn primary">Lưu</button>
+      </div>
+    </form>
+  </dialog>
+
+<script>
+(() => {
+  "use strict";
+
+  /* ---------- Dữ liệu lịch trình ----------
+     sources: danh sách nguồn ảnh thử lần lượt, dạng [nguồn, từ khóa].
+     nguồn: "commons" (Wikimedia Commons) hoặc mã ngôn ngữ Wikipedia ("vi"). */
+  const DAYS = [
+    {
+      id: "d0", label: "Khởi hành", date: "20", month: "tháng 1",
+      title: "Đêm khởi hành", subtitle: "Phú Thái, Hải Dương",
+      stops: [
+        { time: "20:00", title: "Xuất phát từ Phú Thái, Hải Dương",
+          desc: "Có mặt đúng giờ, xe không chờ đợi (không “giờ cao su”)." }
+      ]
+    },
+    {
+      id: "d1", label: "Ngày 1", date: "21", month: "tháng 1",
+      title: "Ngày 1", subtitle: "Hà Giang đến Đồng Văn",
+      stops: [
+        { time: "03:00", title: "Đến nơi, nghỉ ngơi",
+          desc: "Nghỉ tại trọ của nhà xe để lấy lại sức trước khi đi tiếp." },
+        { time: "06:00", title: "Cột mốc số 0",
+          desc: "Điểm khởi đầu cung đường lên cao nguyên đá, chụp ảnh lưu niệm.",
+          sources: [["commons", "Cột mốc Km0 Hà Giang"], ["vi", "Thành phố Hà Giang"]] },
+        { title: "Cổng trời Quản Bạ",
+          desc: "Điểm dừng ngắm thung lũng và Núi Đôi từ trên cao.",
+          sources: [["vi", "Cổng trời Quản Bạ"], ["commons", "Cổng trời Quản Bạ"]] },
+        { title: "Dốc Thẩm Mã",
+          desc: "Con dốc quanh co nổi tiếng trên đường lên Đồng Văn.",
+          sources: [["commons", "Dốc Thẩm Mã Đồng Văn"], ["vi", "Cao nguyên đá Đồng Văn"]] },
+        { title: "Phó Bảng và hoa tam giác mạch",
+          desc: "Dừng chụp ảnh cánh đồng hoa tam giác mạch.",
+          note: "Hoa thường nở rộ vào khoảng tháng 10–12, tháng 1 có thể đã tàn. Nên hỏi lại địa phương.",
+          sources: [["commons", "hoa tam giác mạch Hà Giang"], ["vi", "Kiều mạch"]] },
+        { title: "Nhà của Pao",
+          desc: "Ngôi nhà trong phim “Chuyện của Pao” tại Sủng Là.",
+          sources: [["commons", "Nhà của Pao Sủng Là"], ["vi", "Sủng Là"]] },
+        { title: "Dinh vua Mèo",
+          desc: "Dinh thự họ Vương ở Sà Phìn, kiến trúc kết hợp nét Mông và Hoa.",
+          sources: [["vi", "Dinh thự họ Vương"], ["commons", "Dinh thự họ Vương"]] },
+        { title: "Đồng Văn, nghỉ tại nhà nghỉ",
+          desc: "Kết thúc ngày đầu tại thị trấn Đồng Văn.",
+          sources: [["vi", "Phố cổ Đồng Văn"], ["commons", "Phố cổ Đồng Văn"]] }
+      ]
+    },
+    {
+      id: "d2", label: "Ngày 2", date: "22", month: "tháng 1",
+      title: "Ngày 2", subtitle: "Chợ phiên và cực Bắc",
+      stops: [
+        { time: "Sáng", title: "Chợ phiên Đồng Văn",
+          desc: "Nơi đồng bào các dân tộc vùng cao trao đổi, mua bán.",
+          note: "Chợ phiên Đồng Văn họp vào sáng Chủ nhật hằng tuần. Hãy kiểm tra ngày 22/01 có trùng phiên chợ không.",
+          sources: [["commons", "Chợ phiên Đồng Văn"], ["vi", "Chợ phiên Đồng Văn"]] },
+        { title: "Cột cờ Lũng Cú",
+          desc: "Biểu tượng nơi địa đầu Tổ quốc, trên đỉnh núi Rồng, cao khoảng 1.470 m.",
+          sources: [["vi", "Cột cờ Lũng Cú"], ["commons", "Cột cờ Lũng Cú"]] },
+        { time: "Chiều", title: "Lô Lô Chải",
+          desc: "Bản của người Lô Lô, nằm dưới chân cột cờ Lũng Cú.",
+          sources: [["commons", "Lô Lô Chải"], ["vi", "Lô Lô Chải"]] },
+        { time: "Tối", title: "Quay lại Thèm Bả",
+          desc: "Giữ nguyên theo ghi chú ban đầu, bổ sung chi tiết nơi nghỉ khi chốt." }
+      ]
+    },
+    {
+      id: "d3", label: "Ngày 3", date: "23", month: "tháng 1",
+      title: "Ngày 3", subtitle: "Nho Quế và Mã Pí Lèng",
+      stops: [
+        { time: "Sáng", title: "Sông Nho Quế",
+          desc: "Dòng sông xanh ngọc chảy giữa hẻm vực sâu.",
+          sources: [["vi", "Sông Nho Quế"], ["commons", "Sông Nho Quế"]] },
+        { title: "Đèo Mã Pí Lèng",
+          desc: "Đèo hiểm trở, nhìn xuống toàn cảnh sông Nho Quế.",
+          sources: [["vi", "Đèo Mã Pí Lèng"], ["commons", "Mã Pí Lèng"]] },
+        { time: "Tối", title: "Nghỉ tại Mèo Vạc",
+          desc: "Nghỉ đêm tại thị trấn Mèo Vạc.",
+          sources: [["vi", "Mèo Vạc"], ["commons", "Mèo Vạc"]] }
+      ]
+    },
+    {
+      id: "d4", label: "Ngày 4", date: "24", month: "tháng 1",
+      title: "Ngày 4", subtitle: "Hành trình về",
+      stops: [
+        { time: "Sáng", title: "Về", desc: "Kết thúc chuyến đi." }
+      ]
+    }
+  ];
+
+  /* ---------- Cấu hình chỉnh sửa ----------
+     Mật khẩu nằm trong mã nguồn nên đây chỉ là khóa chống sửa nhầm, không phải bảo mật thật. */
+  const EDIT_PASSWORD = "123123";
+  const STORAGE_KEY = "hagiang-itinerary-v1";
+
+  /* ---------- Tìm ảnh qua API công khai của Wikimedia ---------- */
+  const API = {
+    commons: (q) =>
+      "https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrnamespace=6" +
+      `&gsrlimit=6&gsrsearch=${encodeURIComponent(q)}&prop=imageinfo&iiprop=url&iiurlwidth=900&format=json&origin=*`,
+    wiki: (lang, q) =>
+      `https://${lang}.wikipedia.org/w/api.php?action=query&generator=search&gsrlimit=1` +
+      `&gsrsearch=${encodeURIComponent(q)}&prop=pageimages&piprop=thumbnail&pithumbsize=900&format=json&origin=*`
+  };
+  const isJpeg = (url) => /\.jpe?g(\?|$)/i.test(url || "");
+
+  async function queryApi([source, query]) {
+    const isCommons = source === "commons";
+    const res = await fetch(isCommons ? API.commons(query) : API.wiki(source, query));
+    if (!res.ok) return [];
+    const data = await res.json();
+    return Object.values(data.query?.pages ?? {})
+      .sort((a, b) => a.index - b.index)
+      .map((page) => (isCommons ? page.imageinfo?.[0]?.thumburl : page.thumbnail?.source))
+      .filter(isJpeg);
+  }
+
+  async function findImage(sources) {
+    for (const source of sources) {
+      try {
+        const [url] = await queryApi(source);
+        if (url) return url;
+      } catch { /* thử nguồn kế tiếp */ }
+    }
+    return null;
+  }
+
+  async function searchImages(query) {
+    const settled = await Promise.allSettled([queryApi(["vi", query]), queryApi(["commons", query])]);
+    return [...new Set(settled.flatMap((r) => (r.status === "fulfilled" ? r.value : [])))];
+  }
+
+  /* ---------- Trạng thái và lưu trữ ---------- */
+  const clone = (value) => JSON.parse(JSON.stringify(value));
+  let idCounter = 0;
+  const newId = () => `s${Date.now().toString(36)}${(idCounter++).toString(36)}`;
+  const withIds = (list) => list.map((day) => ({
+    ...day,
+    stops: day.stops.map((stop) => ({ id: newId(), ...stop }))
+  }));
+
+  function loadDays() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+      if (Array.isArray(saved) && saved.length) return saved;
+    } catch { /* dùng dữ liệu gốc */ }
+    return withIds(clone(DAYS));
+  }
+
+  function persist() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(days)); } catch { /* bỏ qua */ }
+  }
+
+  let days = loadDays();
+  let editing = false;
+
+  function findStop(id) {
+    for (const day of days) {
+      const index = day.stops.findIndex((stop) => stop.id === id);
+      if (index !== -1) return { day, index, stop: day.stops[index] };
+    }
+    return null;
+  }
+
+  /* ---------- Hiển thị ---------- */
+  const $ = (id) => document.getElementById(id);
+  const esc = (text = "") => String(text).replace(/[&<>"']/g, (c) =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const imageSearchUrl = (title) =>
+    "https://www.google.com/search?tbm=isch&q=" + encodeURIComponent(`${title} Hà Giang`);
+  const hasImage = (stop) => Boolean(stop.image || stop.sources?.length);
+
+  const stopHtml = (stop) => `
+    <li class="stop${hasImage(stop) ? "" : " plain"}">
+      ${hasImage(stop) ? `<figure class="shot" data-fig="${stop.id}"><span class="ph">Đang tải ảnh…</span></figure>` : ""}
+      <div class="body">
+        ${stop.time ? `<p class="when">${esc(stop.time)}</p>` : ""}
+        <h3>${esc(stop.title)}</h3>
+        ${stop.desc ? `<p class="desc">${esc(stop.desc)}</p>` : ""}
+        ${stop.note ? `<p class="note">${esc(stop.note)}</p>` : ""}
+        <div class="actions">
+          <a class="more" href="${imageSearchUrl(stop.title)}" target="_blank" rel="noopener">Xem thêm ảnh</a>
+          <span class="tools edit-only">
+            <button type="button" class="btn sm" data-action="up" data-id="${stop.id}">Lên</button>
+            <button type="button" class="btn sm" data-action="down" data-id="${stop.id}">Xuống</button>
+            <button type="button" class="btn sm" data-action="edit" data-id="${stop.id}">Sửa</button>
+            <button type="button" class="btn sm danger" data-action="delete" data-id="${stop.id}">Xóa</button>
+          </span>
+        </div>
+      </div>
+    </li>`;
+
+  async function hydrate(figure, stop) {
+    const placeholder = figure.querySelector(".ph");
+    const url = stop.image || (await findImage(stop.sources ?? []));
+    if (!url) {
+      placeholder.textContent = "Chưa tải được ảnh. Dùng nút “Xem thêm ảnh”.";
+      return;
+    }
+    stop.image = url; // ghi nhớ ảnh đại diện, được lưu cùng lần chỉnh sửa kế tiếp
+    const img = new Image();
+    img.alt = stop.title;
+    img.loading = "lazy";
+    img.referrerPolicy = "no-referrer";
+    img.onload = () => placeholder.remove();
+    img.onerror = () => { img.remove(); placeholder.textContent = "Chưa tải được ảnh."; };
+    img.src = url;
+    figure.prepend(img);
+  }
+
+  function render() {
+    $("day-nav").innerHTML = days
+      .map((day) => `<a href="#${day.id}">${esc(day.label)} (${esc(day.date)}/01)</a>`)
+      .join("");
+
+    $("itinerary").innerHTML = days.map((day) => `
+      <section class="day" id="${day.id}">
+        <header class="day-head">
+          <div class="date"><b>${esc(day.date)}</b><span>${esc(day.month)}</span></div>
+          <div><h2>${esc(day.title)}</h2><p>${esc(day.subtitle)}</p></div>
+        </header>
+        <div>
+          <ul class="stops">${day.stops.map(stopHtml).join("")}</ul>
+          <button type="button" class="btn primary edit-only day-add" data-action="add" data-day="${day.id}">Thêm mục</button>
+        </div>
+      </section>`).join("");
+
+    $("itinerary").querySelectorAll("figure[data-fig]").forEach((figure) =>
+      hydrate(figure, findStop(figure.dataset.fig).stop));
+  }
+
+  /* ---------- Khóa chỉnh sửa ---------- */
+  const toggleButton = $("toggle-edit");
+  const pwDialog = $("pw-dialog");
+  const pwInput = $("pw-input");
+  const pwError = $("pw-error");
+
+  function setEditing(on) {
+    editing = on;
+    document.body.classList.toggle("editing", on);
+    toggleButton.textContent = on ? "Xong" : "Chỉnh sửa";
+    toggleButton.setAttribute("aria-pressed", String(on));
+  }
+
+  toggleButton.addEventListener("click", () => {
+    if (editing) return setEditing(false);
+    pwInput.value = "";
+    pwError.hidden = true;
+    pwDialog.showModal();
+    pwInput.focus();
+  });
+
+  $("pw-form").addEventListener("submit", (event) => {
+    event.preventDefault();
+    if (pwInput.value === EDIT_PASSWORD) {
+      pwDialog.close();
+      setEditing(true);
+    } else {
+      pwError.hidden = false;
+      pwInput.select();
+    }
+  });
+
+  document.querySelectorAll("[data-close]").forEach((button) =>
+    button.addEventListener("click", () => button.closest("dialog").close()));
+
+  /* ---------- Hộp thoại thêm và sửa mục ---------- */
+  const editor = $("editor-dialog");
+  const form = $("editor-form");
+  const keyword = $("kw");
+  const imageStatus = $("image-status");
+  const thumbs = $("thumbs");
+
+  let draft = null;
+  let candidates = [];
+  let searchToken = 0;
+  let pendingSearch = Promise.resolve();
+  let typingTimer;
+
+  function renderThumbs() {
+    thumbs.innerHTML =
+      `<button type="button" class="thumb" data-url="" aria-pressed="${!draft.image}">Không dùng ảnh</button>` +
+      candidates.map((url) => `
+        <button type="button" class="thumb" data-url="${esc(url)}" aria-pressed="${url === draft.image}">
+          <img src="${esc(url)}" alt="" loading="lazy" referrerpolicy="no-referrer">
+        </button>`).join("");
+  }
+
+  /* autoPick = true: tự chọn ảnh đầu tiên làm ảnh đại diện. */
+  function runSearch(autoPick) {
+    const query = keyword.value.trim();
+    if (!query) return Promise.resolve();
+    const token = ++searchToken;
+    imageStatus.textContent = "Đang tìm ảnh…";
+    pendingSearch = searchImages(query).then((found) => {
+      if (token !== searchToken) return;
+      if (autoPick) draft.image = found[0] ?? "";
+      candidates = [...new Set([draft.image, ...found].filter(Boolean))].slice(0, 9);
+      imageStatus.textContent = !found.length
+        ? "Không tìm thấy ảnh, thử từ khóa khác."
+        : autoPick ? "Đã chọn ảnh đầu tiên làm ảnh đại diện. Bấm ảnh khác để đổi."
+                   : "Bấm vào ảnh để chọn làm ảnh đại diện.";
+      renderThumbs();
+    });
+    return pendingSearch;
+  }
+
+  function openEditor(dayId, id) {
+    const stop = id ? findStop(id).stop : {};
+    draft = { id: id ?? null, dayId, image: stop.image ?? "", manual: Boolean(stop.image), keywordTouched: Boolean(id) };
+    const fields = form.elements;
+    fields.time.value = stop.time ?? "";
+    fields.title.value = stop.title ?? "";
+    fields.desc.value = stop.desc ?? "";
+    fields.note.value = stop.note ?? "";
+    keyword.value = stop.title ?? "";
+    candidates = draft.image ? [draft.image] : [];
+    imageStatus.textContent = "";
+    $("editor-title").textContent = id ? "Sửa mục" : "Thêm mục";
+    renderThumbs();
+    editor.showModal();
+    fields.title.focus();
+    if (keyword.value) runSearch(!draft.manual);
+  }
+
+  form.elements.title.addEventListener("input", (event) => {
+    if (draft.keywordTouched) return;
+    keyword.value = event.target.value;
+    clearTimeout(typingTimer);
+    typingTimer = setTimeout(() => runSearch(!draft.manual), 700);
+  });
+  keyword.addEventListener("input", () => { draft.keywordTouched = true; });
+  keyword.addEventListener("keydown", (event) => {
+    if (event.key !== "Enter") return;
+    event.preventDefault();
+    runSearch(!draft.manual);
+  });
+  $("search-images").addEventListener("click", () => runSearch(!draft.manual));
+
+  thumbs.addEventListener("click", (event) => {
+    const button = event.target.closest(".thumb");
+    if (!button) return;
+    draft.image = button.dataset.url;
+    draft.manual = true;
+    renderThumbs();
+  });
+
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    clearTimeout(typingTimer);
+    await (draft.manual ? pendingSearch : runSearch(true));
+
+    const fields = form.elements;
+    const data = {
+      time: fields.time.value.trim(),
+      title: fields.title.value.trim(),
+      desc: fields.desc.value.trim(),
+      note: fields.note.value.trim(),
+      image: draft.image
+    };
+    if (draft.id) {
+      const { stop } = findStop(draft.id);
+      Object.assign(stop, data);
+      delete stop.sources; // từ nay dùng ảnh đã chọn
+    } else {
+      days.find((day) => day.id === draft.dayId).stops.push({ id: newId(), ...data });
+    }
+    persist();
+    render();
+    editor.close();
+  });
+
+  /* ---------- Thao tác trên danh sách ---------- */
+  $("itinerary").addEventListener("click", (event) => {
+    const button = event.target.closest("[data-action]");
+    if (!button || !editing) return;
+    const { action, id, day: dayId } = button.dataset;
+
+    if (action === "add") return openEditor(dayId, null);
+    if (action === "edit") return openEditor(findStop(id).day.id, id);
+
+    const { day, index, stop } = findStop(id);
+    if (action === "delete") {
+      if (!confirm(`Xóa mục “${stop.title}”?`)) return;
+      day.stops.splice(index, 1);
+    } else {
+      const target = action === "up" ? index - 1 : index + 1;
+      if (target < 0 || target >= day.stops.length) return;
+      [day.stops[index], day.stops[target]] = [day.stops[target], day.stops[index]];
+    }
+    persist();
+    render();
+  });
+
+  $("reset").addEventListener("click", () => {
+    if (!confirm("Khôi phục toàn bộ lịch trình về bản gốc? Các chỉnh sửa sẽ bị xóa.")) return;
+    try { localStorage.removeItem(STORAGE_KEY); } catch { /* bỏ qua */ }
+    days = withIds(clone(DAYS));
+    render();
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
