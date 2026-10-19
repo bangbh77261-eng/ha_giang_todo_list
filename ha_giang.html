@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Lịch trình Hà Giang 20–24/01</title>
+<title>Lịch trình Hà Giang 20–24/11</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700&display=swap">
 <style>
@@ -256,13 +256,26 @@
   }
   .thumb img { display: block; width: 100%; height: 100%; object-fit: cover; }
   .thumb[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
+
+  .status {
+    margin: 16px 0 0;
+    padding: 10px 14px;
+    border-radius: 8px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-size: .875rem;
+  }
+  .status.error { background: var(--warn-soft); color: var(--danger); }
+
+  .row { flex-wrap: wrap; }
+  .row input { min-width: 160px; }
 </style>
 </head>
 <body>
   <header class="hero">
     <div class="wrap">
       <h1>Hà Giang – Đồng Văn – Mèo Vạc</h1>
-      <p>Hành trình từ 20/01 đến 24/01. Xe xuất phát đúng 20:00 tại Phú Thái, Hải Dương.</p>
+      <p>Hành trình từ <span id="trip-range">20/11 đến 24/11</span>. Xe xuất phát đúng 20:00 tại Phú Thái, Hải Dương.</p>
       <ol class="route" aria-label="Tuyến đường chính">
         <li>Hà Giang</li>
         <li>Quản Bạ</li>
@@ -274,11 +287,11 @@
   </header>
 
   <nav class="days" aria-label="Chọn ngày"><div class="wrap"><div class="links" id="day-nav"></div><button type="button" class="btn" id="toggle-edit" aria-pressed="false">Chỉnh sửa</button></div></nav>
+  <div class="wrap"><p class="status" id="status" role="status" hidden></p></div>
   <main class="wrap" id="itinerary"></main>
 
   <footer>
-    <div class="wrap">Ảnh được tải từ Wikipedia và Wikimedia Commons khi mở trang, cần có kết nối mạng. Nếu ảnh chưa khớp địa danh, dùng liên kết “Xem thêm ảnh” trên từng mục.</div>
-    <div class="wrap"><button type="button" class="btn edit-only" id="reset">Khôi phục lịch trình gốc</button></div>
+    <div class="wrap">Lịch trình lưu trên Supabase. Ảnh được tải từ Wikipedia và Wikimedia Commons khi mở trang, cần có kết nối mạng. Nếu ảnh chưa khớp địa danh, dùng liên kết “Xem thêm ảnh” trên từng mục.</div>
   </footer>
 
   <dialog id="pw-dialog" aria-labelledby="pw-title">
@@ -315,7 +328,14 @@
         <div class="row">
           <input id="kw" name="keyword" placeholder="Từ khóa tìm ảnh">
           <button type="button" class="btn" id="search-images">Tìm ảnh</button>
+          <button type="button" class="btn" id="google-search">Tìm trên Google</button>
         </div>
+        <label for="img-url">Dán link ảnh từ Google</label>
+        <div class="row">
+          <input id="img-url" type="url" placeholder="https://…" autocomplete="off">
+          <button type="button" class="btn" id="use-image-url">Dùng link</button>
+        </div>
+        <p class="hint">Bấm “Tìm trên Google”, mở ảnh bạn chọn ở cỡ lớn, nhấn giữ hoặc bấm chuột phải vào ảnh, chọn “Sao chép địa chỉ hình ảnh” rồi dán vào ô trên. Ảnh được thêm và chọn ngay.</p>
         <p class="hint" id="image-status"></p>
         <div class="thumbs" id="thumbs"></div>
       </div>
@@ -330,109 +350,44 @@
 (() => {
   "use strict";
 
-  /* ---------- Dữ liệu lịch trình ----------
-     sources: danh sách nguồn ảnh thử lần lượt, dạng [nguồn, từ khóa].
-     nguồn: "commons" (Wikimedia Commons) hoặc mã ngôn ngữ Wikipedia ("vi"). */
-  const DAYS = [
-    {
-      id: "d0", label: "Khởi hành", date: "20", month: "tháng 1",
-      title: "Đêm khởi hành", subtitle: "Phú Thái, Hải Dương",
-      stops: [
-        { time: "20:00", title: "Xuất phát từ Phú Thái, Hải Dương",
-          desc: "Có mặt đúng giờ, xe không chờ đợi (không “giờ cao su”)." }
-      ]
-    },
-    {
-      id: "d1", label: "Ngày 1", date: "21", month: "tháng 1",
-      title: "Ngày 1", subtitle: "Hà Giang đến Đồng Văn",
-      stops: [
-        { time: "03:00", title: "Đến nơi, nghỉ ngơi",
-          desc: "Nghỉ tại trọ của nhà xe để lấy lại sức trước khi đi tiếp." },
-        { time: "06:00", title: "Cột mốc số 0",
-          desc: "Điểm khởi đầu cung đường lên cao nguyên đá, chụp ảnh lưu niệm.",
-          sources: [["commons", "Cột mốc Km0 Hà Giang"], ["vi", "Thành phố Hà Giang"]] },
-        { title: "Cổng trời Quản Bạ",
-          desc: "Điểm dừng ngắm thung lũng và Núi Đôi từ trên cao.",
-          sources: [["vi", "Cổng trời Quản Bạ"], ["commons", "Cổng trời Quản Bạ"]] },
-        { title: "Dốc Thẩm Mã",
-          desc: "Con dốc quanh co nổi tiếng trên đường lên Đồng Văn.",
-          sources: [["commons", "Dốc Thẩm Mã Đồng Văn"], ["vi", "Cao nguyên đá Đồng Văn"]] },
-        { title: "Phó Bảng và hoa tam giác mạch",
-          desc: "Dừng chụp ảnh cánh đồng hoa tam giác mạch.",
-          note: "Hoa thường nở rộ vào khoảng tháng 10–12, tháng 1 có thể đã tàn. Nên hỏi lại địa phương.",
-          sources: [["commons", "hoa tam giác mạch Hà Giang"], ["vi", "Kiều mạch"]] },
-        { title: "Nhà của Pao",
-          desc: "Ngôi nhà trong phim “Chuyện của Pao” tại Sủng Là.",
-          sources: [["commons", "Nhà của Pao Sủng Là"], ["vi", "Sủng Là"]] },
-        { title: "Dinh vua Mèo",
-          desc: "Dinh thự họ Vương ở Sà Phìn, kiến trúc kết hợp nét Mông và Hoa.",
-          sources: [["vi", "Dinh thự họ Vương"], ["commons", "Dinh thự họ Vương"]] },
-        { title: "Đồng Văn, nghỉ tại nhà nghỉ",
-          desc: "Kết thúc ngày đầu tại thị trấn Đồng Văn.",
-          sources: [["vi", "Phố cổ Đồng Văn"], ["commons", "Phố cổ Đồng Văn"]] }
-      ]
-    },
-    {
-      id: "d2", label: "Ngày 2", date: "22", month: "tháng 1",
-      title: "Ngày 2", subtitle: "Chợ phiên và cực Bắc",
-      stops: [
-        { time: "Sáng", title: "Chợ phiên Đồng Văn",
-          desc: "Nơi đồng bào các dân tộc vùng cao trao đổi, mua bán.",
-          note: "Chợ phiên Đồng Văn họp vào sáng Chủ nhật hằng tuần. Hãy kiểm tra ngày 22/01 có trùng phiên chợ không.",
-          sources: [["commons", "Chợ phiên Đồng Văn"], ["vi", "Chợ phiên Đồng Văn"]] },
-        { title: "Cột cờ Lũng Cú",
-          desc: "Biểu tượng nơi địa đầu Tổ quốc, trên đỉnh núi Rồng, cao khoảng 1.470 m.",
-          sources: [["vi", "Cột cờ Lũng Cú"], ["commons", "Cột cờ Lũng Cú"]] },
-        { time: "Chiều", title: "Lô Lô Chải",
-          desc: "Bản của người Lô Lô, nằm dưới chân cột cờ Lũng Cú.",
-          sources: [["commons", "Lô Lô Chải"], ["vi", "Lô Lô Chải"]] },
-        { time: "Tối", title: "Quay lại Thèm Bả",
-          desc: "Giữ nguyên theo ghi chú ban đầu, bổ sung chi tiết nơi nghỉ khi chốt." }
-      ]
-    },
-    {
-      id: "d3", label: "Ngày 3", date: "23", month: "tháng 1",
-      title: "Ngày 3", subtitle: "Nho Quế và Mã Pí Lèng",
-      stops: [
-        { time: "Sáng", title: "Sông Nho Quế",
-          desc: "Dòng sông xanh ngọc chảy giữa hẻm vực sâu.",
-          sources: [["vi", "Sông Nho Quế"], ["commons", "Sông Nho Quế"]] },
-        { title: "Đèo Mã Pí Lèng",
-          desc: "Đèo hiểm trở, nhìn xuống toàn cảnh sông Nho Quế.",
-          sources: [["vi", "Đèo Mã Pí Lèng"], ["commons", "Mã Pí Lèng"]] },
-        { time: "Tối", title: "Nghỉ tại Mèo Vạc",
-          desc: "Nghỉ đêm tại thị trấn Mèo Vạc.",
-          sources: [["vi", "Mèo Vạc"], ["commons", "Mèo Vạc"]] }
-      ]
-    },
-    {
-      id: "d4", label: "Ngày 4", date: "24", month: "tháng 1",
-      title: "Ngày 4", subtitle: "Hành trình về",
-      stops: [
-        { time: "Sáng", title: "Về", desc: "Kết thúc chuyến đi." }
-      ]
-    }
-  ];
+  /* ---------- Kết nối Supabase ----------
+     anonKey là khóa công khai, quyền thực tế do phân quyền trong file SQL quyết định. */
+  const SUPABASE = {
+    url: "https://uijplnwxyrhlgmenzyls.supabase.co",
+    anonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVpanBsbnd4eXJobGdtZW56eWxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIxODQ5ODAsImV4cCI6MjA4Nzc2MDk4MH0.qa8h6a6AeK7nfBJJytwMiJYoD2p-QWROA6ylm5RpTm8"
+  };
 
-  /* ---------- Cấu hình chỉnh sửa ----------
-     Mật khẩu nằm trong mã nguồn nên đây chỉ là khóa chống sửa nhầm, không phải bảo mật thật. */
-  const EDIT_PASSWORD = "123123";
-  const STORAGE_KEY = "hagiang-itinerary-v1";
+  async function request(path, { method = "GET", body } = {}) {
+    const res = await fetch(`${SUPABASE.url}/rest/v1/${path}`, {
+      method,
+      headers: {
+        apikey: SUPABASE.anonKey,
+        Authorization: `Bearer ${SUPABASE.anonKey}`,
+        "Content-Type": "application/json"
+      },
+      body: body === undefined ? undefined : JSON.stringify(body)
+    });
+    const text = await res.text();
+    const data = text ? JSON.parse(text) : null;
+    if (!res.ok) throw new Error(data?.message || `Lỗi kết nối (${res.status})`);
+    return data;
+  }
+  const rpc = (name, args) => request(`rpc/${name}`, { method: "POST", body: args });
 
   /* ---------- Tìm ảnh qua API công khai của Wikimedia ---------- */
   const API = {
     commons: (q) =>
       "https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrnamespace=6" +
       `&gsrlimit=6&gsrsearch=${encodeURIComponent(q)}&prop=imageinfo&iiprop=url&iiurlwidth=900&format=json&origin=*`,
-    wiki: (lang, q) =>
-      `https://${lang}.wikipedia.org/w/api.php?action=query&generator=search&gsrlimit=1` +
+    wiki: (q) =>
+      "https://vi.wikipedia.org/w/api.php?action=query&generator=search&gsrlimit=1" +
       `&gsrsearch=${encodeURIComponent(q)}&prop=pageimages&piprop=thumbnail&pithumbsize=900&format=json&origin=*`
   };
   const isJpeg = (url) => /\.jpe?g(\?|$)/i.test(url || "");
 
-  async function queryApi([source, query]) {
+  async function queryApi(source, query) {
     const isCommons = source === "commons";
-    const res = await fetch(isCommons ? API.commons(query) : API.wiki(source, query));
+    const res = await fetch(isCommons ? API.commons(query) : API.wiki(query));
     if (!res.ok) return [];
     const data = await res.json();
     return Object.values(data.query?.pages ?? {})
@@ -441,44 +396,26 @@
       .filter(isJpeg);
   }
 
-  async function findImage(sources) {
-    for (const source of sources) {
-      try {
-        const [url] = await queryApi(source);
-        if (url) return url;
-      } catch { /* thử nguồn kế tiếp */ }
-    }
-    return null;
-  }
+  const withPlace = (text) => (/hà giang/i.test(text) ? text : `${text} Hà Giang`);
 
   async function searchImages(query) {
-    const settled = await Promise.allSettled([queryApi(["vi", query]), queryApi(["commons", query])]);
+    const q = withPlace(query);
+    const settled = await Promise.allSettled([queryApi("commons", q), queryApi("wiki", q)]);
     return [...new Set(settled.flatMap((r) => (r.status === "fulfilled" ? r.value : [])))];
   }
 
-  /* ---------- Trạng thái và lưu trữ ---------- */
-  const clone = (value) => JSON.parse(JSON.stringify(value));
-  let idCounter = 0;
-  const newId = () => `s${Date.now().toString(36)}${(idCounter++).toString(36)}`;
-  const withIds = (list) => list.map((day) => ({
-    ...day,
-    stops: day.stops.map((stop) => ({ id: newId(), ...stop }))
-  }));
-
-  function loadDays() {
-    try {
-      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
-      if (Array.isArray(saved) && saved.length) return saved;
-    } catch { /* dùng dữ liệu gốc */ }
-    return withIds(clone(DAYS));
-  }
-
-  function persist() {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(days)); } catch { /* bỏ qua */ }
-  }
-
-  let days = loadDays();
+  /* ---------- Dữ liệu ---------- */
+  let days = [];
   let editing = false;
+  let editPassword = "";
+
+  async function loadItinerary() {
+    const [dayRows, stopRows] = await Promise.all([
+      request("itinerary_days?select=*&order=sort_order"),
+      request("itinerary_stops?select=*&order=sort_order,created_at")
+    ]);
+    days = dayRows.map((day) => ({ ...day, stops: stopRows.filter((stop) => stop.day_id === day.id) }));
+  }
 
   function findStop(id) {
     for (const day of days) {
@@ -493,16 +430,29 @@
   const esc = (text = "") => String(text).replace(/[&<>"']/g, (c) =>
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const imageSearchUrl = (title) =>
-    "https://www.google.com/search?tbm=isch&q=" + encodeURIComponent(`${title} Hà Giang`);
-  const hasImage = (stop) => Boolean(stop.image || stop.sources?.length);
+    "https://www.google.com/search?tbm=isch&q=" + encodeURIComponent(withPlace(title));
+  const hasImage = (stop) => Boolean(stop.image_url || stop.image_query);
+
+  /* trip_date có dạng "2026-11-20". Tách chuỗi để tránh lệch múi giờ. */
+  const parseDate = (value) => {
+    const [, month, day] = value.split("-");
+    return { day, month: String(Number(month)), short: `${day}/${month}` };
+  };
+
+  function showStatus(message, isError = false) {
+    const box = $("status");
+    box.hidden = !message;
+    box.textContent = message || "";
+    box.classList.toggle("error", isError);
+  }
 
   const stopHtml = (stop) => `
     <li class="stop${hasImage(stop) ? "" : " plain"}">
       ${hasImage(stop) ? `<figure class="shot" data-fig="${stop.id}"><span class="ph">Đang tải ảnh…</span></figure>` : ""}
       <div class="body">
-        ${stop.time ? `<p class="when">${esc(stop.time)}</p>` : ""}
+        ${stop.time_label ? `<p class="when">${esc(stop.time_label)}</p>` : ""}
         <h3>${esc(stop.title)}</h3>
-        ${stop.desc ? `<p class="desc">${esc(stop.desc)}</p>` : ""}
+        ${stop.description ? `<p class="desc">${esc(stop.description)}</p>` : ""}
         ${stop.note ? `<p class="note">${esc(stop.note)}</p>` : ""}
         <div class="actions">
           <a class="more" href="${imageSearchUrl(stop.title)}" target="_blank" rel="noopener">Xem thêm ảnh</a>
@@ -518,12 +468,11 @@
 
   async function hydrate(figure, stop) {
     const placeholder = figure.querySelector(".ph");
-    const url = stop.image || (await findImage(stop.sources ?? []));
+    const url = stop.image_url || (await searchImages(stop.image_query))[0];
     if (!url) {
       placeholder.textContent = "Chưa tải được ảnh. Dùng nút “Xem thêm ảnh”.";
       return;
     }
-    stop.image = url; // ghi nhớ ảnh đại diện, được lưu cùng lần chỉnh sửa kế tiếp
     const img = new Image();
     img.alt = stop.title;
     img.loading = "lazy";
@@ -535,27 +484,42 @@
   }
 
   function render() {
+    if (days.length) {
+      const first = parseDate(days[0].trip_date).short;
+      const last = parseDate(days[days.length - 1].trip_date).short;
+      $("trip-range").textContent = `${first} đến ${last}`;
+      document.title = `Lịch trình Hà Giang ${first.slice(0, 2)}–${last}`;
+    }
+
     $("day-nav").innerHTML = days
-      .map((day) => `<a href="#${day.id}">${esc(day.label)} (${esc(day.date)}/01)</a>`)
+      .map((day) => `<a href="#d-${day.id}">${esc(day.label)} (${parseDate(day.trip_date).short})</a>`)
       .join("");
 
-    $("itinerary").innerHTML = days.map((day) => `
-      <section class="day" id="${day.id}">
+    $("itinerary").innerHTML = days.map((day) => {
+      const date = parseDate(day.trip_date);
+      return `
+      <section class="day" id="d-${day.id}">
         <header class="day-head">
-          <div class="date"><b>${esc(day.date)}</b><span>${esc(day.month)}</span></div>
+          <div class="date"><b>${date.day}</b><span>tháng ${date.month}</span></div>
           <div><h2>${esc(day.title)}</h2><p>${esc(day.subtitle)}</p></div>
         </header>
         <div>
           <ul class="stops">${day.stops.map(stopHtml).join("")}</ul>
           <button type="button" class="btn primary edit-only day-add" data-action="add" data-day="${day.id}">Thêm mục</button>
         </div>
-      </section>`).join("");
+      </section>`;
+    }).join("");
 
     $("itinerary").querySelectorAll("figure[data-fig]").forEach((figure) =>
       hydrate(figure, findStop(figure.dataset.fig).stop));
   }
 
-  /* ---------- Khóa chỉnh sửa ---------- */
+  async function refresh() {
+    await loadItinerary();
+    render();
+  }
+
+  /* ---------- Khóa chỉnh sửa (mật khẩu được máy chủ kiểm tra) ---------- */
   const toggleButton = $("toggle-edit");
   const pwDialog = $("pw-dialog");
   const pwInput = $("pw-input");
@@ -563,6 +527,7 @@
 
   function setEditing(on) {
     editing = on;
+    if (!on) editPassword = "";
     document.body.classList.toggle("editing", on);
     toggleButton.textContent = on ? "Xong" : "Chỉnh sửa";
     toggleButton.setAttribute("aria-pressed", String(on));
@@ -576,12 +541,16 @@
     pwInput.focus();
   });
 
-  $("pw-form").addEventListener("submit", (event) => {
+  $("pw-form").addEventListener("submit", async (event) => {
     event.preventDefault();
-    if (pwInput.value === EDIT_PASSWORD) {
+    try {
+      const ok = await rpc("check_edit_password", { p_password: pwInput.value });
+      if (!ok) throw new Error("Mật khẩu không đúng.");
+      editPassword = pwInput.value;
       pwDialog.close();
       setEditing(true);
-    } else {
+    } catch (error) {
+      pwError.textContent = error.message;
       pwError.hidden = false;
       pwInput.select();
     }
@@ -590,12 +559,27 @@
   document.querySelectorAll("[data-close]").forEach((button) =>
     button.addEventListener("click", () => button.closest("dialog").close()));
 
+  /* Chạy một thao tác ghi, rồi tải lại dữ liệu từ Supabase. */
+  async function mutate(action) {
+    try {
+      await action();
+      await refresh();
+      showStatus("");
+      return true;
+    } catch (error) {
+      showStatus(error.message, true);
+      if (/mật khẩu/i.test(error.message)) setEditing(false);
+      return false;
+    }
+  }
+
   /* ---------- Hộp thoại thêm và sửa mục ---------- */
   const editor = $("editor-dialog");
   const form = $("editor-form");
   const keyword = $("kw");
   const imageStatus = $("image-status");
   const thumbs = $("thumbs");
+  const imageUrlInput = $("img-url");
 
   let draft = null;
   let candidates = [];
@@ -620,11 +604,12 @@
     imageStatus.textContent = "Đang tìm ảnh…";
     pendingSearch = searchImages(query).then((found) => {
       if (token !== searchToken) return;
-      if (autoPick) draft.image = found[0] ?? "";
+      const picked = autoPick && !draft.manual;
+      if (picked) draft.image = found[0] ?? "";
       candidates = [...new Set([draft.image, ...found].filter(Boolean))].slice(0, 9);
       imageStatus.textContent = !found.length
-        ? "Không tìm thấy ảnh, thử từ khóa khác."
-        : autoPick ? "Đã chọn ảnh đầu tiên làm ảnh đại diện. Bấm ảnh khác để đổi."
+        ? "Không tìm thấy ảnh. Thử từ khóa khác hoặc bấm “Tìm trên Google”."
+        : picked ? "Đã chọn ảnh đầu tiên làm ảnh đại diện. Bấm ảnh khác để đổi."
                    : "Bấm vào ảnh để chọn làm ảnh đại diện.";
       renderThumbs();
     });
@@ -633,15 +618,22 @@
 
   function openEditor(dayId, id) {
     const stop = id ? findStop(id).stop : {};
-    draft = { id: id ?? null, dayId, image: stop.image ?? "", manual: Boolean(stop.image), keywordTouched: Boolean(id) };
+    draft = {
+      id: id ?? null,
+      dayId,
+      image: stop.image_url ?? "",
+      manual: Boolean(stop.image_url),
+      keywordTouched: Boolean(id)
+    };
     const fields = form.elements;
-    fields.time.value = stop.time ?? "";
+    fields.time.value = stop.time_label ?? "";
     fields.title.value = stop.title ?? "";
-    fields.desc.value = stop.desc ?? "";
+    fields.desc.value = stop.description ?? "";
     fields.note.value = stop.note ?? "";
-    keyword.value = stop.title ?? "";
+    keyword.value = stop.image_query || stop.title || "";
     candidates = draft.image ? [draft.image] : [];
     imageStatus.textContent = "";
+    imageUrlInput.value = "";
     $("editor-title").textContent = id ? "Sửa mục" : "Thêm mục";
     renderThumbs();
     editor.showModal();
@@ -671,29 +663,68 @@
     renderThumbs();
   });
 
+  $("google-search").addEventListener("click", () => {
+    const query = keyword.value.trim() || form.elements.title.value.trim();
+    if (!query) return form.elements.title.focus();
+    window.open(imageSearchUrl(query), "_blank", "noopener");
+  });
+
+  /* Dán link ảnh (ví dụ sao chép từ Google Images): thêm vào danh sách và chọn ngay. */
+  function useImageUrl(raw) {
+    const url = raw.trim();
+    if (!url) return;
+    if (!/^https?:\/\/\S+$/i.test(url)) {
+      imageStatus.textContent = "Link ảnh phải bắt đầu bằng http:// hoặc https://.";
+      return;
+    }
+    draft.image = url;
+    draft.manual = true;
+    candidates = [url, ...candidates.filter((item) => item !== url)].slice(0, 9);
+    imageStatus.textContent = "Đã chọn ảnh từ link vừa dán.";
+    renderThumbs();
+  }
+
+  imageUrlInput.addEventListener("paste", () => setTimeout(() => useImageUrl(imageUrlInput.value), 0));
+  imageUrlInput.addEventListener("keydown", (event) => {
+    if (event.key !== "Enter") return;
+    event.preventDefault();
+    useImageUrl(imageUrlInput.value);
+  });
+  $("use-image-url").addEventListener("click", () => useImageUrl(imageUrlInput.value));
+
+  /* Ảnh không tải được (trang gốc chặn nhúng) thì bỏ khỏi danh sách để không chọn nhầm. */
+  thumbs.addEventListener("error", (event) => {
+    const tile = event.target.closest(".thumb");
+    if (!tile) return;
+    const url = tile.dataset.url;
+    candidates = candidates.filter((item) => item !== url);
+    if (url === draft.image) {
+      draft.image = "";
+      imageStatus.textContent = "Ảnh này không tải được (trang gốc có thể chặn nhúng ảnh). Hãy thử ảnh khác.";
+    }
+    renderThumbs();
+  }, true);
+
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
+    const submit = form.querySelector("[type=submit]");
+    submit.disabled = true;
     clearTimeout(typingTimer);
     await (draft.manual ? pendingSearch : runSearch(true));
 
     const fields = form.elements;
-    const data = {
-      time: fields.time.value.trim(),
-      title: fields.title.value.trim(),
-      desc: fields.desc.value.trim(),
-      note: fields.note.value.trim(),
-      image: draft.image
-    };
-    if (draft.id) {
-      const { stop } = findStop(draft.id);
-      Object.assign(stop, data);
-      delete stop.sources; // từ nay dùng ảnh đã chọn
-    } else {
-      days.find((day) => day.id === draft.dayId).stops.push({ id: newId(), ...data });
-    }
-    persist();
-    render();
-    editor.close();
+    const saved = await mutate(() => rpc("save_stop", {
+      p_password: editPassword,
+      p_id: draft.id,
+      p_day_id: draft.dayId,
+      p_time_label: fields.time.value,
+      p_title: fields.title.value,
+      p_description: fields.desc.value,
+      p_note: fields.note.value,
+      p_image_url: draft.image || null
+    }));
+    submit.disabled = false;
+    if (saved) editor.close();
   });
 
   /* ---------- Thao tác trên danh sách ---------- */
@@ -705,27 +736,21 @@
     if (action === "add") return openEditor(dayId, null);
     if (action === "edit") return openEditor(findStop(id).day.id, id);
 
-    const { day, index, stop } = findStop(id);
     if (action === "delete") {
+      const { stop } = findStop(id);
       if (!confirm(`Xóa mục “${stop.title}”?`)) return;
-      day.stops.splice(index, 1);
+      mutate(() => rpc("delete_stop", { p_password: editPassword, p_id: id }));
     } else {
-      const target = action === "up" ? index - 1 : index + 1;
-      if (target < 0 || target >= day.stops.length) return;
-      [day.stops[index], day.stops[target]] = [day.stops[target], day.stops[index]];
+      mutate(() => rpc("move_stop", { p_password: editPassword, p_id: id, p_dir: action === "up" ? -1 : 1 }));
     }
-    persist();
-    render();
   });
 
-  $("reset").addEventListener("click", () => {
-    if (!confirm("Khôi phục toàn bộ lịch trình về bản gốc? Các chỉnh sửa sẽ bị xóa.")) return;
-    try { localStorage.removeItem(STORAGE_KEY); } catch { /* bỏ qua */ }
-    days = withIds(clone(DAYS));
-    render();
-  });
-
-  render();
+  /* ---------- Khởi động ---------- */
+  showStatus("Đang tải lịch trình…");
+  refresh()
+    .then(() => showStatus(""))
+    .catch((error) => showStatus(
+      `Không tải được dữ liệu: ${error.message}. Hãy chắc chắn đã chạy file supabase-lich-trinh.sql.`, true));
 })();
 </script>
 </body>
