@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Lịch trình Hà Giang 20–24/11</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap">
 <style>
   :root {
     --bg: #f3f6f5;
@@ -269,29 +269,520 @@
 
   .row { flex-wrap: wrap; }
   .row input { min-width: 160px; }
+
+  .panel { margin: 28px 0; padding: 20px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+  .panel-head { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+  .panel-head h2 { margin: 0; font-size: 1.35rem; }
+  .panel-head p { flex-basis: 100%; margin: 0; color: var(--muted); font-size: .9rem; }
+  .filter-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 16px 0; }
+  .filter-row label { font-size: .875rem; font-weight: 500; }
+  .filter-row select { max-width: 100%; padding: 7px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); font: 400 .95rem var(--font); }
+  .task-list { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+  .task-card { display: grid; grid-template-columns: 1fr auto; gap: 10px; padding: 14px; border: 1px solid var(--line); border-radius: 9px; }
+  .task-card h3 { margin: 0; font-size: 1rem; }
+  .task-card p { margin: 5px 0 0; color: var(--muted); font-size: .9rem; white-space: pre-wrap; }
+  .task-meta { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .task-meta span { padding: 2px 8px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); font-size: .78rem; }
+  .task-actions { display: flex; align-items: flex-start; gap: 6px; }
+  .expense-summary { margin: 12px 0; color: var(--muted); }
+  .expense-list { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+  .expense-card { display: grid; grid-template-columns: 112px 1fr auto; align-items: center; gap: 14px; padding: 12px; border: 1px solid var(--line); border-radius: 9px; }
+  .expense-card > img { width: 112px; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 6px; background: var(--accent-soft); }
+  .expense-card h3 { margin: 0; font-size: 1rem; }
+  .expense-card p { margin: 4px 0 0; color: var(--muted); white-space: pre-wrap; }
+  .expense-amount { color: var(--accent); font-weight: 700; }
+  .expense-actions { display: flex; gap: 6px; }
+  .expense-preview { display: block; width: min(100%, 280px); max-height: 200px; object-fit: cover; border-radius: 8px; }
+  .expense-preview[hidden] { display: none; }
+  .empty { margin: 0; padding: 18px; border: 1px dashed var(--line); border-radius: 8px; color: var(--muted); text-align: center; }
+  .session-list { display: grid; gap: 8px; margin: 14px 0 0; padding: 0; list-style: none; }
+  .session-row { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; padding: 10px 12px; border-radius: 8px; background: var(--bg); font-size: .875rem; }
+  .session-row small { color: var(--muted); }
+  .session-state { color: var(--accent); font-weight: 700; }
+  .session-state.offline { color: var(--muted); font-weight: 500; }
+  .upload-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+  .upload-row input[type=file] { flex: 1; min-width: 180px; color: var(--muted); font: .875rem var(--font); }
+  .storage-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+  #storage-gallery[hidden] { display: none; }
+  .storage-card { display: grid; gap: 6px; padding: 8px; border: 1px solid var(--line); border-radius: 8px; }
+  .storage-card img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 5px; background: var(--accent-soft); }
+  .storage-card small { overflow-wrap: anywhere; color: var(--muted); }
+  .storage-actions { display: flex; gap: 6px; }
+  .storage-actions .btn { flex: 1; padding-inline: 8px; }
+  @media (max-width: 560px) { .panel { padding: 14px; } .task-card { grid-template-columns: 1fr; } .task-actions { justify-content: flex-end; } .expense-card { grid-template-columns: 88px 1fr; } .expense-card > img { width: 88px; } .expense-actions { grid-column: 1 / -1; justify-content: flex-end; } }
+
+  /* Visual refresh: editorial travel dashboard */
+  :root {
+    color-scheme: light;
+    --bg: #f4f6f2;
+    --surface: #fff;
+    --ink: #18332d;
+    --muted: #687a73;
+    --line: #dfe8e1;
+    --accent: #28634f;
+    --accent-soft: #e8f1eb;
+    --warn: #8c5b1b;
+    --warn-soft: #fff5e4;
+    --danger: #ad5149;
+    --radius: 18px;
+    --shadow: 0 18px 48px rgb(28 57 44 / .07);
+  }
+
+  html { scroll-padding-top: 86px; }
+  body {
+    background:
+      radial-gradient(ellipse at 8% 0%, rgb(223 235 224 / .62), transparent 30rem),
+      var(--bg);
+    color: var(--ink);
+    font-size: 15px;
+    line-height: 1.65;
+  }
+  .wrap { max-width: 1160px; padding-inline: 28px; }
+  a { color: var(--accent); }
+  :focus-visible { outline-color: #d3a762; outline-offset: 3px; }
+
+  .hero {
+    position: relative;
+    overflow: hidden;
+    padding: clamp(54px, 8vw, 96px) 0 68px;
+    color: #f4f3e9;
+    background: linear-gradient(118deg, #153a32 0%, #1a493c 58%, #275946 100%);
+    isolation: isolate;
+  }
+  .hero::before,
+  .hero::after { content: ""; position: absolute; z-index: -1; pointer-events: none; }
+  .hero::before {
+    inset: -40% -8% auto auto;
+    width: min(66vw, 780px);
+    aspect-ratio: 1;
+    border: 1px solid rgb(232 235 214 / .14);
+    border-radius: 50%;
+    box-shadow: 0 0 0 44px rgb(232 235 214 / .035), 0 0 0 100px rgb(232 235 214 / .025);
+  }
+  .hero::after {
+    inset: auto 32% -70% auto;
+    width: 480px;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgb(202 171 111 / .16), transparent 68%);
+  }
+  .hero-layout { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(300px, .8fr); align-items: center; gap: clamp(38px, 7vw, 96px); }
+  .hero-copy { max-width: 650px; }
+  .hero-kicker { display: flex; align-items: center; gap: 10px; margin: 0 0 24px; color: #cbd9c8; font-size: .72rem; font-weight: 700; letter-spacing: .16em; }
+  .hero-kicker span { width: 8px; height: 8px; border-radius: 50%; background: #d6b375; box-shadow: 0 0 0 5px rgb(214 179 117 / .16); }
+  .hero h1 { margin: 0; color: #fffdf4; font-size: clamp(3rem, 7vw, 5.7rem); line-height: .98; letter-spacing: -.065em; font-weight: 700; }
+  .hero h1 span { display: block; margin-top: 18px; color: #d5dfd1; font-size: clamp(1.1rem, 2vw, 1.45rem); line-height: 1.45; letter-spacing: -.02em; font-weight: 500; }
+  .hero .hero-summary { max-width: 44ch; margin: 18px 0 0; color: #d0ddd2; font-size: 1rem; }
+  .hero-facts { display: flex; gap: clamp(24px, 5vw, 56px); margin-top: 34px; padding-top: 22px; border-top: 1px solid rgb(236 241 227 / .2); }
+  .hero-fact { display: grid; gap: 2px; }
+  .hero-fact > span { color: #adc4b3; font-size: .67rem; font-weight: 700; letter-spacing: .14em; }
+  .hero-fact strong { color: #fffdf4; font-size: 1.15rem; font-weight: 600; }
+  .hero-fact small { color: #c0d0c3; font-size: .78rem; }
+  .route-panel { padding: 24px 26px; border: 1px solid rgb(236 241 227 / .18); border-radius: 20px; background: rgb(242 244 231 / .075); box-shadow: 0 24px 80px rgb(8 31 25 / .12); backdrop-filter: blur(10px); }
+  .route-heading { display: flex; justify-content: space-between; color: #b8cbb9; font-size: .68rem; font-weight: 700; letter-spacing: .14em; }
+  .route { display: grid; gap: 0; margin: 18px 0 16px; }
+  .route li { min-height: 38px; padding: 0 0 10px 27px; color: #f3f1e5; font-size: .9rem; }
+  .route li::before { top: 9px; left: 5px; right: auto; bottom: -1px; width: 1px; height: auto; background: rgb(213 223 208 / .34); }
+  .route li:last-child::before { display: none; }
+  .route li::after { top: 4px; left: 0; width: 11px; height: 11px; background: #d7b778; box-shadow: 0 0 0 4px rgb(215 183 120 / .13); }
+  .route-panel > p { margin: 0; padding-top: 15px; border-top: 1px solid rgb(236 241 227 / .16); color: #bfd0c1; font-size: .78rem; }
+
+  .days { border-bottom: 1px solid rgb(215 225 216 / .9); background: rgb(250 251 248 / .88); box-shadow: 0 8px 24px rgb(26 56 42 / .035); }
+  .days .wrap { min-height: 68px; gap: 10px; padding-block: 10px; }
+  .days .links { gap: 7px; }
+  .days a { padding: 8px 13px; border-color: transparent; border-radius: 10px; background: transparent; color: #66776f; font-size: .81rem; font-weight: 600; transition: background .18s ease, color .18s ease; }
+  .days a:hover { border-color: transparent; background: var(--accent-soft); color: var(--accent); }
+  .days .btn { border-color: var(--line); background: #fff; color: var(--ink); }
+  .days .btn:hover { border-color: #b7cbbd; background: var(--accent-soft); color: var(--accent); }
+  .days #toggle-edit { padding-inline: 17px; border-color: var(--accent); background: var(--accent); color: #fff; }
+  .days #toggle-edit:hover { background: #1d503e; color: #fff; }
+  body.editing .days { border-bottom-color: #91b6a0; }
+
+  #status { margin-top: 20px; padding: 12px 16px; border: 1px solid #d4e4d8; border-radius: 12px; box-shadow: 0 4px 14px rgb(30 66 47 / .04); }
+  #status.error { border-color: #f0d3b4; background: #fff5e9; color: #965a2d; }
+  #itinerary { padding-top: 8px; }
+  .day { grid-template-columns: 178px minmax(0, 1fr); gap: 34px; padding: 46px 0; border-bottom-color: #dce5dd; scroll-margin-top: 86px; }
+  .day-head { top: 96px; }
+  .day-head .date { gap: 9px; }
+  .day-head .date b { color: var(--accent); font-size: 3.25rem; letter-spacing: -.06em; }
+  .day-head .date span { color: #8b9a91; font-size: .79rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+  .day-head h2 { margin-top: 13px; font-size: 1.1rem; letter-spacing: -.025em; }
+  .day-head p { margin-top: 3px; font-size: .82rem; }
+  .stops { gap: 16px; }
+  .stop { grid-template-columns: minmax(210px, 31%) minmax(0, 1fr); border-color: #e0e8e1; border-radius: 17px; box-shadow: 0 8px 24px rgb(31 62 45 / .045); transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease; }
+  .stop:hover { transform: translateY(-2px); border-color: #cfddd1; box-shadow: 0 14px 30px rgb(31 62 45 / .09); }
+  .stop.plain { grid-template-columns: 1fr; }
+  .shot { min-height: 190px; background: linear-gradient(145deg, #e9efe8, #dce8df); }
+  .shot .ph { color: #76877b; font-size: .78rem; }
+  .body { padding: 21px 24px; }
+  .when { margin-bottom: 9px; padding: 4px 10px; background: #edf4ed; color: #4f775e; font-size: .72rem; letter-spacing: .025em; }
+  .body h3 { margin-bottom: 6px; font-size: 1.12rem; letter-spacing: -.025em; }
+  .body .desc { color: #687970; font-size: .88rem; line-height: 1.7; }
+  .note { border-left-width: 2px; border-radius: 0 10px 10px 0; font-size: .81rem; }
+  .more { color: #39745a; font-size: .8rem; font-weight: 700; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+  .actions { gap: 8px 12px; }
+  .tools { display: flex; flex-wrap: wrap; gap: 5px; }
+  .day-add { margin-top: 14px; }
+
+  .panel { margin: 20px auto; padding: clamp(20px, 3vw, 30px); border-color: #e0e8e1; border-radius: 20px; box-shadow: var(--shadow); }
+  .panel-head { gap: 12px; }
+  .panel-head h2 { color: #1c3b31; font-size: 1.28rem; letter-spacing: -.035em; }
+  .panel-head p { color: #78877e; font-size: .84rem; }
+  .filter-row { margin: 18px 0 14px; }
+  .filter-row label { color: #687970; font-size: .82rem; font-weight: 600; }
+  .filter-row select { padding: 9px 12px; border-color: #dce6dd; border-radius: 10px; background: #fbfcfa; font-size: .84rem; }
+  .task-list, .expense-list { gap: 9px; }
+  .task-card, .expense-card { border-color: #e3eae4; border-radius: 13px; background: #fff; transition: border-color .18s ease, box-shadow .18s ease; }
+  .task-card:hover, .expense-card:hover { border-color: #cadbce; box-shadow: 0 7px 20px rgb(31 62 45 / .045); }
+  .task-card { padding: 16px 17px; }
+  .task-card h3, .expense-card h3 { color: #203c32; font-size: .95rem; }
+  .task-card p, .expense-card p { color: #748279; font-size: .82rem; }
+  .task-meta { gap: 6px; }
+  .task-meta span { padding: 3px 9px; background: #eef4ee; color: #52735c; font-size: .7rem; font-weight: 600; }
+  .expense-summary { color: #718078; font-size: .83rem; }
+  .expense-card { padding: 12px; }
+  .expense-card > img { border-radius: 9px; }
+  .expense-amount { margin-top: 2px; color: #28634f; font-size: 1rem; }
+  .expense-actions { align-self: start; }
+  .session-row { border: 1px solid #e6ece6; border-radius: 11px; background: #fafbf9; }
+  .session-state { color: #39765b; }
+  .empty { border-color: #dce6de; background: #fbfcfa; font-size: .83rem; }
+  footer { padding: 24px 0 44px; color: #849189; font-size: .76rem; }
+
+  .btn { padding: 8px 13px; border-color: #dce6dd; border-radius: 10px; background: #fff; color: #244237; font-size: .81rem; font-weight: 600; transition: transform .15s ease, background .15s ease, border-color .15s ease, box-shadow .15s ease; }
+  .btn:hover { border-color: #b9cebd; background: #f4f8f3; color: var(--accent); }
+  .btn:active { transform: translateY(1px); }
+  .btn.primary { border-color: #28634f; background: #28634f; color: #fff; box-shadow: 0 5px 12px rgb(40 99 79 / .16); }
+  .btn.primary:hover { border-color: #1c503d; background: #1c503d; color: #fff; }
+  .btn.danger { color: #9d534b; }
+  .btn.danger:hover { border-color: #e2c4be; background: #fff5f2; color: #9d453d; }
+  .btn.sm { padding: 5px 9px; border-radius: 8px; font-size: .72rem; }
+  .btn:disabled { cursor: wait; opacity: .58; transform: none; }
+
+  dialog { border-color: #dce6dd; border-radius: 18px; box-shadow: 0 28px 90px rgb(16 39 29 / .2); }
+  dialog::backdrop { background: rgb(17 34 27 / .48); backdrop-filter: blur(3px); }
+  .dlg { gap: 15px; padding: 25px; }
+  .dlg h2 { color: #203b31; font-size: 1.22rem; letter-spacing: -.03em; }
+  .field { color: #455e50; font-size: .81rem; font-weight: 600; }
+  .field input, .field textarea, .field select { border: 1px solid #dce6dd; border-radius: 10px; background: #fbfcfa; color: var(--ink); font: 400 .91rem var(--font); }
+  .field input, .field textarea { padding: 10px 12px; }
+  .field select { padding: 10px 12px; }
+  .field input:focus, .field textarea:focus, .field select:focus, .filter-row select:focus { border-color: #7da88d; outline: 3px solid rgb(79 137 100 / .14); }
+  .hint { color: #7c8981; font-size: .75rem; }
+  .thumb { border-color: #dce6dd; border-radius: 10px; }
+  .thumb[aria-pressed="true"] { border-color: #39765b; box-shadow: 0 0 0 2px rgb(57 118 91 / .2); }
+
+  @media (max-width: 760px) {
+    .wrap { padding-inline: 20px; }
+    .hero { padding: 46px 0 42px; }
+    .hero-layout { grid-template-columns: 1fr; gap: 34px; }
+    .hero-kicker { margin-bottom: 19px; }
+    .hero h1 { font-size: clamp(3rem, 14vw, 4.8rem); }
+    .route-panel { max-width: 520px; }
+    .days .wrap { min-height: 62px; gap: 6px; padding-inline: 14px; }
+    .days .links { flex: 0 0 100%; order: 2; }
+    .days .wrap { flex-wrap: wrap; }
+    .days .wrap > .btn { order: 1; }
+    .days .wrap > #toggle-edit { margin-left: auto; }
+    .day { grid-template-columns: 1fr; gap: 18px; padding: 32px 0; }
+    .day-head { position: static; display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 0 14px; }
+    .day-head .date { grid-row: span 2; }
+    .day-head h2 { margin: 0; }
+    .day-head p { margin-top: 2px; }
+    .stop { grid-template-columns: 1fr; }
+    .shot { min-height: 0; aspect-ratio: 16 / 9; }
+    .body { padding: 18px; }
+    .route li { font-size: .84rem; }
+  }
+  @media (max-width: 480px) {
+    .hero-facts { gap: 22px; }
+    .hero-fact strong { font-size: 1rem; }
+    .hero-fact small { font-size: .7rem; }
+    .route-panel { padding: 20px; }
+    .days .wrap { padding-inline: 10px; }
+    .days .wrap > .btn { padding-inline: 10px; font-size: .74rem; }
+    .panel { padding: 18px; border-radius: 16px; }
+    .panel-head h2 { font-size: 1.1rem; }
+    .task-card { grid-template-columns: 1fr; }
+    .task-actions { justify-content: flex-end; }
+    .expense-card { grid-template-columns: 78px minmax(0, 1fr); gap: 10px; }
+    .expense-card > img { width: 78px; }
+    .expense-card .empty { padding: 10px 4px; font-size: .65rem; }
+    .expense-actions { grid-column: 1 / -1; justify-content: flex-end; }
+    .dlg { padding: 20px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+  }
+
+  /* Full-bleed cover and stronger content hierarchy */
+  .hero { min-height: 650px; display: flex; align-items: center; padding: 84px 0 90px; }
+  .hero::before, .hero::after { display: none; }
+  .hero-cover { position: absolute; z-index: -2; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 46%; opacity: 0; transform: scale(1.025); transition: opacity .7s ease, transform 1.8s ease; }
+  .hero-cover.is-loaded { opacity: .76; transform: scale(1); }
+  .hero-scrim { position: absolute; z-index: -1; inset: 0; background: radial-gradient(circle at 86% 16%, rgb(213 183 120 / .19), transparent 17rem), linear-gradient(90deg, #102f28 0%, rgb(16 47 40 / .96) 25%, rgb(16 47 40 / .72) 52%, rgb(16 47 40 / .24) 100%), linear-gradient(0deg, rgb(12 35 29 / .68), transparent 48%); }
+  .hero-layout { position: relative; z-index: 1; width: 100%; grid-template-columns: minmax(0, 1.05fr) minmax(340px, .75fr); gap: clamp(42px, 8vw, 112px); }
+  .hero-copy { max-width: 700px; }
+  .hero h1 { font-family: "Playfair Display", Georgia, serif; font-size: clamp(4.4rem, 9vw, 7.5rem); line-height: .9; letter-spacing: -.065em; text-shadow: 0 8px 30px rgb(8 23 18 / .16); }
+  .hero h1 span { margin-top: 22px; color: #e6e9db; font-family: var(--font); font-size: clamp(1.15rem, 2.3vw, 1.65rem); letter-spacing: -.035em; font-weight: 500; }
+  .hero .hero-summary { margin-top: 15px; color: #e1e8dc; font-size: 1.03rem; }
+  .hero-cta { display: inline-flex; align-items: center; gap: 15px; margin-top: 25px; padding: 10px 15px 10px 18px; border: 1px solid rgb(239 241 224 / .34); border-radius: 999px; color: #fffdf4; font-size: .79rem; font-weight: 700; text-decoration: none; transition: background .2s ease, border-color .2s ease, transform .2s ease; }
+  .hero-cta span { display: grid; place-items: center; width: 25px; height: 25px; border-radius: 50%; background: #d6b375; color: #183a30; font-size: 1rem; line-height: 1; }
+  .hero-cta:hover { transform: translateY(-2px); border-color: #d6b375; background: rgb(255 255 255 / .09); }
+  .hero-facts { margin-top: 42px; }
+  .hero-fact strong { font-size: 1.23rem; }
+  .route-panel { position: relative; overflow: hidden; padding: 27px 29px; border-color: rgb(255 255 255 / .3); background: linear-gradient(145deg, rgb(23 54 43 / .74), rgb(20 43 37 / .48)); box-shadow: 0 28px 100px rgb(8 22 17 / .34); backdrop-filter: blur(18px); }
+  .route-panel::after { content: "N"; position: absolute; top: -42px; right: 5px; display: grid; place-items: center; width: 118px; height: 118px; border: 1px solid rgb(255 255 255 / .12); border-radius: 50%; color: rgb(255 255 255 / .09); font: 700 3rem Georgia, serif; pointer-events: none; }
+  .route-heading { color: #d0dbc9; }
+  .route li { font-size: .94rem; }
+  .hero-caption { position: absolute; z-index: 1; right: 0; bottom: 23px; left: 0; display: flex; justify-content: space-between; color: rgb(245 244 230 / .75); font-size: .62rem; font-weight: 700; letter-spacing: .16em; pointer-events: none; }
+
+  .days { border-bottom-color: #dce6dd; }
+  .days .wrap { max-width: 1220px; }
+  .days .links a { position: relative; }
+  .days .links a::after { content: ""; position: absolute; right: 13px; bottom: 2px; left: 13px; height: 2px; border-radius: 2px; background: var(--accent); transform: scaleX(0); transform-origin: left; transition: transform .2s ease; }
+  .days .links a:hover::after { transform: scaleX(1); }
+
+  #itinerary { max-width: 1100px; padding-top: 20px; }
+  .itinerary-intro { display: flex; justify-content: space-between; align-items: end; gap: 24px; margin: 38px 0 4px; padding-bottom: 24px; border-bottom: 1px solid #dce5dd; }
+  .section-kicker { color: #8c9d91; font-size: .66rem; font-weight: 700; letter-spacing: .16em; }
+  .itinerary-intro h2 { margin: 4px 0 2px; color: #1b3d31; font-size: clamp(1.8rem, 4vw, 2.5rem); line-height: 1.15; letter-spacing: -.06em; }
+  .itinerary-intro p { margin: 0; color: #77877d; font-size: .84rem; }
+  .itinerary-count { flex: none; padding: 9px 13px; border: 1px solid #dce6dd; border-radius: 999px; background: rgb(255 255 255 / .75); color: #6e7e74; font-size: .74rem; }
+  .itinerary-count strong { color: #28634f; font-size: 1rem; }
+  .itinerary-count i { margin-inline: 4px; color: #afbbb0; font-style: normal; }
+  .day { position: relative; grid-template-columns: 188px minmax(0, 1fr); gap: 38px; padding: 42px 0 46px; }
+  .day-head { position: sticky; top: 100px; align-self: start; padding: 19px 17px 20px; border: 1px solid #e0e8e1; border-radius: 16px; background: linear-gradient(155deg, #fff 0%, #f4f8f2 100%); box-shadow: 0 12px 32px rgb(31 62 45 / .055); }
+  .day-index { display: inline-flex; align-items: center; gap: 7px; margin-bottom: 9px; color: #8a9a8d; font-size: .62rem; font-weight: 700; letter-spacing: .15em; }
+  .day-index::before { content: ""; width: 16px; height: 1px; background: #c29f62; }
+  .day-head .date b { font-family: "Playfair Display", Georgia, serif; font-size: 3.8rem; }
+  .day-head h2 { max-width: 14ch; font-size: 1.16rem; line-height: 1.35; }
+  .day-head p { max-width: 20ch; }
+  .stop { grid-template-columns: minmax(230px, 36%) minmax(0, 1fr); border-radius: 20px; box-shadow: 0 10px 34px rgb(35 63 45 / .055); }
+  .stop.plain { grid-template-columns: 1fr; }
+  .shot { min-height: 218px; overflow: hidden; }
+  .shot img { transition: transform .7s cubic-bezier(.2, .7, .2, 1); }
+  .stop:hover .shot img { transform: scale(1.045); }
+  .body { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; padding: 25px 29px; }
+  .body h3 { font-size: 1.2rem; }
+  .body .desc { max-width: 60ch; font-size: .91rem; }
+  .actions { width: 100%; margin-top: 15px; }
+
+  .planning-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; gap: 22px; margin-top: 28px; margin-bottom: 24px; }
+  .planning-grid .panel { min-width: 0; margin: 0; padding: 24px; border-radius: 19px; }
+  .planning-grid .panel-head { display: grid; grid-template-columns: 36px minmax(0, 1fr) auto; align-items: center; column-gap: 10px; row-gap: 5px; }
+  .panel-index { display: grid; grid-row: 1 / span 2; place-items: center; width: 34px; height: 34px; border: 1px solid #d8e5da; border-radius: 11px; background: #f0f6ef; color: #5c8065; font-size: .65rem; font-weight: 700; }
+  .planning-grid .panel-head h2 { font-size: 1.12rem; }
+  .planning-grid .panel-head .btn { grid-column: 3; grid-row: 1 / span 2; }
+  .planning-grid .panel-head p { grid-column: 2 / 4; font-size: .74rem; }
+  .budget-total { display: grid; gap: 3px; margin: 18px 0 15px; padding: 15px 17px; border: 1px solid #dce9dd; border-radius: 14px; background: linear-gradient(120deg, #f1f7ef, #f9fbf6); }
+  .budget-total > span { color: #859487; font-size: .61rem; font-weight: 700; letter-spacing: .14em; }
+  .budget-total strong { color: #245b46; font-size: clamp(1.35rem, 2vw, 1.8rem); line-height: 1.2; letter-spacing: -.055em; }
+  .budget-total small { color: #839188; font-size: .7rem; }
+  .expense-summary { margin: 0; }
+  .task-card { padding: 13px 14px; }
+  .expense-card { grid-template-columns: 90px minmax(0, 1fr) auto; gap: 11px; }
+  .expense-card > img { width: 90px; }
+  .expense-card .empty { padding: 12px 5px; font-size: .68rem; }
+  .task-meta span { line-height: 1.5; }
+  .session-list { max-width: 1060px; margin-inline: auto; }
+  .wrap.panel[aria-labelledby="sessions-title"] { max-width: 1100px; }
+  .wrap.panel[aria-labelledby="sessions-title"] .panel-head { padding-bottom: 16px; border-bottom: 1px solid #e6ece6; }
+  .planning-grid .panel { position: relative; overflow: hidden; }
+  .planning-grid .panel::before { content: ""; position: absolute; inset: 0 0 auto; height: 3px; background: linear-gradient(90deg, #28634f, #a8c49b 62%, #e0c48c); }
+  .planning-grid .panel-head { padding-bottom: 17px; border-bottom: 1px solid #edf1eb; }
+  .panel-index { border-color: #d8e5da; background: linear-gradient(145deg, #f4f8f1, #e7f0e7); color: #557b60; }
+  .task-card, .expense-card { padding: 14px; border-radius: 14px; box-shadow: 0 4px 15px rgb(31 62 45 / .025); }
+  .task-card h3, .expense-card h3 { letter-spacing: -.02em; }
+  .task-meta span { padding: 4px 9px; border: 1px solid #e7eee7; background: #f3f7f1; }
+  .expense-card > img { border-radius: 10px; }
+  .expense-card .empty { min-height: 68px; display: grid; place-items: center; }
+  .budget-total { position: relative; overflow: hidden; border-color: #dae7da; background: linear-gradient(112deg, #eff6ed 0%, #fbfcf8 70%); }
+  .budget-total::after { content: "₫"; position: absolute; right: 12px; bottom: -28px; color: rgb(40 99 79 / .07); font: 700 6rem "Be Vietnam Pro", sans-serif; pointer-events: none; }
+  .budget-total strong { position: relative; z-index: 1; }
+  .filter-row { padding: 11px 13px; border-radius: 12px; background: #f6f8f4; }
+  .empty { padding: 24px 16px; border-color: #dce7dc; background: linear-gradient(135deg, #fbfcf9, #f5f8f3); }
+  .session-heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; width: 100%; }
+  .session-live { display: inline-flex; align-items: center; gap: 7px; color: #8b948d; font-size: .68rem; font-weight: 700; letter-spacing: .04em; }
+  .session-live i { width: 8px; height: 8px; border-radius: 50%; background: #c9a45e; box-shadow: 0 0 0 4px rgb(201 164 94 / .13); }
+  .session-live.is-live { color: #367455; }
+  .session-live.is-live i { background: #4c9b6c; box-shadow: 0 0 0 4px rgb(76 155 108 / .14); animation: session-pulse 2.2s ease-out infinite; }
+  @keyframes session-pulse { 50% { box-shadow: 0 0 0 7px rgb(76 155 108 / 0); } }
+  .btn { transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease, background .16s ease; }
+  .btn:hover { transform: translateY(-1px); box-shadow: 0 5px 13px rgb(31 62 45 / .08); }
+  .btn.primary { box-shadow: 0 6px 16px rgb(40 99 79 / .18); }
+  .day-add { border-radius: 999px; padding-inline: 15px; }
+
+  @media (max-width: 900px) {
+    .hero { min-height: 600px; }
+    .hero-layout { grid-template-columns: minmax(0, 1fr) minmax(280px, .82fr); gap: 32px; }
+    .hero h1 { font-size: clamp(4rem, 9vw, 6rem); }
+    .day { grid-template-columns: 150px minmax(0, 1fr); gap: 25px; }
+    .stop { grid-template-columns: minmax(190px, 34%) minmax(0, 1fr); }
+    .planning-grid { gap: 14px; }
+    .planning-grid .panel { padding: 18px; }
+    .planning-grid .panel-head { grid-template-columns: 31px minmax(0, 1fr); }
+    .panel-index { width: 30px; height: 30px; }
+    .planning-grid .panel-head .btn { grid-column: 2; grid-row: 3; justify-self: start; }
+    .planning-grid .panel-head p { grid-column: 2; grid-row: 2; }
+    .expense-card { grid-template-columns: 74px minmax(0, 1fr); }
+    .expense-card > img { width: 74px; }
+    .expense-actions { grid-column: 2; justify-content: flex-end; }
+  }
+  @media (max-width: 680px) {
+    .hero { min-height: 0; padding: 60px 0 76px; }
+    .hero-cover { object-position: center; }
+    .hero-scrim { background: radial-gradient(circle at 82% 8%, rgb(213 183 120 / .14), transparent 12rem), linear-gradient(90deg, rgb(14 42 34 / .94), rgb(14 42 34 / .62)), linear-gradient(0deg, rgb(12 35 29 / .76), transparent 66%); }
+    .hero-layout { grid-template-columns: 1fr; gap: 28px; }
+    .hero h1 { font-size: clamp(4rem, 16vw, 6rem); }
+    .hero-facts { margin-top: 28px; }
+    .hero-cta { margin-top: 21px; }
+    .route-panel { max-width: none; padding: 20px 22px; }
+    .route { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 9px; }
+    .route li { min-height: 34px; padding-left: 22px; font-size: .78rem; }
+    .route li::before { display: none; }
+    .route li:last-child { grid-column: 1 / -1; }
+    .hero-caption { bottom: 18px; font-size: .52rem; }
+    .itinerary-intro { align-items: start; flex-direction: column; gap: 13px; margin-top: 27px; padding-bottom: 19px; }
+    .day { grid-template-columns: 1fr; gap: 17px; padding: 29px 0 34px; }
+    .day-head { position: static; display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 0 12px; padding: 14px 16px; }
+    .day-index { grid-column: 1 / -1; margin-bottom: 5px; }
+    .day-head .date { grid-column: 1; grid-row: 2 / span 2; }
+    .day-head > div:last-child { grid-column: 2; grid-row: 2 / span 2; }
+    .day-head .date b { font-size: 3.1rem; }
+    .day-head h2 { margin: 0; }
+    .day-head p { max-width: none; }
+    .stop { grid-template-columns: 1fr; }
+    .shot { min-height: 0; aspect-ratio: 16 / 9; }
+    .body { padding: 19px; }
+    .planning-grid { grid-template-columns: 1fr; gap: 14px; margin-top: 18px; }
+    .planning-grid .panel { padding: 19px; }
+    .planning-grid .panel-head { grid-template-columns: 34px minmax(0, 1fr) auto; }
+    .panel-index { width: 32px; height: 32px; }
+    .planning-grid .panel-head .btn { grid-column: 3; grid-row: 1 / span 2; justify-self: end; }
+    .planning-grid .panel-head p { grid-column: 2 / -1; grid-row: 2; }
+    .budget-total { margin-top: 16px; }
+    .expense-card { grid-template-columns: 85px minmax(0, 1fr) auto; }
+    .expense-card > img { width: 85px; }
+    .expense-actions { grid-column: auto; }
+  }
+  @media (max-width: 430px) {
+    .hero .wrap { padding-inline: 20px; }
+    .hero-kicker { font-size: .6rem; }
+    .hero h1 { font-size: 3.7rem; }
+    .hero-facts { gap: 18px; }
+    .hero-fact strong { font-size: .96rem; }
+    .hero-fact small { font-size: .65rem; }
+    .route li { font-size: .74rem; }
+    .planning-grid .panel-head { grid-template-columns: 29px minmax(0, 1fr); }
+    .panel-index { width: 28px; height: 28px; }
+    .planning-grid .panel-head h2 { font-size: 1rem; }
+    .planning-grid .panel-head .btn { grid-column: 2; grid-row: 3; justify-self: start; }
+    .planning-grid .panel-head p { grid-column: 2; grid-row: 2; }
+    .expense-card { grid-template-columns: 68px minmax(0, 1fr); }
+    .expense-card > img { width: 68px; }
+    .expense-actions { grid-column: 2; }
+  }
+
+  .budget-overview { grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); gap: 18px; }
+  .budget-metric { display: grid; align-content: center; gap: 4px; min-width: 0; }
+  .budget-metric > span { color: #859487; font-size: .61rem; font-weight: 700; letter-spacing: .11em; }
+  .budget-metric > strong { overflow-wrap: anywhere; font-size: clamp(1rem, 2vw, 1.55rem); letter-spacing: -.04em; }
+  .budget-metric > small { color: #839188; font-size: .68rem; line-height: 1.45; }
+  .budget-per-person { padding-left: 18px; border-left: 1px solid #dce8dc; }
+  .budget-per-person > strong { color: #8a672d; }
+  .expense-person-heading { margin: -3px 0 8px; color: #859487; font-size: .61rem; font-weight: 700; letter-spacing: .11em; }
+  .expense-person-heading[hidden] { display: none; }
+  .expense-person-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 7px; margin: -4px 0 15px; padding: 0; list-style: none; }
+  .expense-person-list[hidden] { display: none; }
+  .expense-person-list li { display: flex; align-items: center; justify-content: space-between; gap: 9px; min-width: 0; padding: 8px 10px; border: 1px solid #e4ebe2; border-radius: 10px; background: #fbfcf9; font-size: .72rem; }
+  .expense-person-list li span { overflow-wrap: anywhere; color: #627469; }
+  .expense-person-list li strong { flex: none; color: #28634f; font-size: .74rem; }
+  .expense-paid-by { margin: 5px 0 0 !important; color: #627469 !important; font-size: .72rem !important; }
+  .expense-paid-by strong { color: #28634f; font-weight: 700; }
+  .expense-paid-by.is-unassigned { color: #9a7650 !important; }
+  .participants-panel { max-width: 1100px; margin: 0 auto 24px; padding: 24px; border-radius: 19px; }
+  .participants-panel .panel-head { padding-bottom: 16px; border-bottom: 1px solid #e6ece6; }
+  .participants-count { margin-left: auto; padding: 5px 10px; border: 1px solid #dce8dc; border-radius: 999px; background: #f1f6ef; color: #557b60; font-size: .7rem; font-weight: 700; }
+  .participant-list { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin: 18px 0 0; padding: 0; list-style: none; }
+  .participant-card { display: flex; align-items: center; gap: 10px; min-width: 0; padding: 11px 12px; border: 1px solid #e3ebe2; border-radius: 13px; background: linear-gradient(140deg, #fcfdfb, #f5f8f3); }
+  .participant-avatar { display: grid; flex: none; place-items: center; width: 36px; height: 36px; border: 1px solid #d9e6d8; border-radius: 12px; background: linear-gradient(145deg, #edf5ec, #e5eee5); color: #38654d; font-size: .65rem; font-weight: 700; }
+  .participant-name { min-width: 0; overflow-wrap: anywhere; color: #294536; font-size: .76rem; font-weight: 600; line-height: 1.35; }
+  .participant-list .empty { grid-column: 1 / -1; }
+  @media (max-width: 900px) { .participant-list { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  @media (max-width: 680px) { .participants-panel { padding: 19px; } .participant-list { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; } }
+  @media (max-width: 430px) { .participant-list { grid-template-columns: 1fr; } .participants-panel .panel-head { align-items: center; } .participants-count { margin-left: 0; } }
+  @media (max-width: 430px) {
+    .budget-overview { grid-template-columns: 1fr; gap: 12px; }
+    .budget-per-person { padding: 12px 0 0; border-top: 1px solid #dce8dc; border-left: 0; }
+  }
 </style>
 </head>
 <body>
   <header class="hero">
-    <div class="wrap">
-      <h1>Hà Giang – Đồng Văn – Mèo Vạc</h1>
-      <p>Hành trình từ <span id="trip-range">20/11 đến 24/11</span>. Xe xuất phát đúng 20:00 tại Phú Thái, Hải Dương.</p>
-      <ol class="route" aria-label="Tuyến đường chính">
-        <li>Hà Giang</li>
-        <li>Quản Bạ</li>
-        <li>Đồng Văn</li>
-        <li>Lũng Cú</li>
-        <li>Mèo Vạc</li>
-      </ol>
+    <img class="hero-cover" id="hero-cover" alt="" aria-hidden="true">
+    <div class="hero-scrim" aria-hidden="true"></div>
+    <div class="wrap hero-layout">
+      <div class="hero-copy">
+        <p class="hero-kicker"><span></span> HÀNH TRÌNH VÙNG CAO · VIỆT NAM</p>
+        <h1>Hà Giang<span>Đi giữa miền đá nở hoa</span></h1>
+        <p class="hero-summary">Một hành trình qua những cung đèo, bản làng và cao nguyên đá phía Bắc.</p>
+        <a class="hero-cta" href="#itinerary">Khám phá hành trình <span aria-hidden="true">↓</span></a>
+        <div class="hero-facts">
+          <div class="hero-fact"><span>KHỞI HÀNH</span><strong>20:00</strong><small>Phú Thái, Hải Dương</small></div>
+          <div class="hero-fact"><span>THỜI GIAN</span><strong id="trip-range">20/11 đến 24/11</strong><small>5 ngày · 4 đêm</small></div>
+        </div>
+      </div>
+      <aside class="route-panel" aria-label="Tuyến đường chính">
+        <div class="route-heading"><span>LỘ TRÌNH</span><span>01 — 05</span></div>
+        <ol class="route">
+          <li>Hà Giang</li>
+          <li>Quản Bạ</li>
+          <li>Đồng Văn</li>
+          <li>Lũng Cú</li>
+          <li>Mèo Vạc</li>
+        </ol>
+        <p>Cung đường qua những điểm dừng đặc sắc của cao nguyên đá.</p>
+      </aside>
     </div>
+    <div class="hero-caption wrap"><span>ĐÔNG BẮC VIỆT NAM</span><span>CAO NGUYÊN ĐÁ ĐỒNG VĂN</span></div>
   </header>
 
-  <nav class="days" aria-label="Chọn ngày"><div class="wrap"><div class="links" id="day-nav"></div><button type="button" class="btn" id="toggle-edit" aria-pressed="false">Chỉnh sửa</button></div></nav>
+  <nav class="days" aria-label="Chọn ngày"><div class="wrap"><div class="links" id="day-nav"></div><a class="btn" href="#tasks-section">Phân công</a><a class="btn" href="#expenses-section">Chi phí</a><a class="btn" href="#participants-section">Người tham gia</a><button type="button" class="btn" id="toggle-edit" aria-pressed="false">Chỉnh sửa</button></div></nav>
   <div class="wrap"><p class="status" id="status" role="status" hidden></p></div>
   <main class="wrap" id="itinerary"></main>
 
+  <div class="wrap planning-grid">
+    <section class="panel" id="tasks-section" aria-labelledby="tasks-title">
+      <div class="panel-head"><span class="panel-index">01</span><h2 id="tasks-title">Phân công</h2><button type="button" class="btn primary edit-only" id="add-task">Thêm công việc</button><p>Mọi người có thể xem. Cần mật khẩu để thêm, sửa hoặc xóa.</p></div>
+      <div class="filter-row"><label for="task-filter">Xem công việc của</label><select id="task-filter"><option value="*">Tất cả mọi người</option></select></div>
+      <ul class="task-list" id="task-list" aria-live="polite"></ul>
+    </section>
+
+    <section class="panel" id="expenses-section" aria-labelledby="expenses-title">
+      <div class="panel-head"><span class="panel-index">02</span><h2 id="expenses-title">Ngân sách</h2><button type="button" class="btn primary edit-only" id="add-expense">Thêm khoản chi</button><p>Các khoản dự tính và ảnh đính kèm của chuyến đi.</p></div>
+      <div class="budget-total budget-overview" aria-label="Tổng quan chi phí">
+        <div class="budget-metric"><span>TỔNG CHI PHÍ DỰ TÍNH</span><strong id="expense-summary" aria-live="polite">Đang tải…</strong><small id="expense-count"></small></div>
+        <div class="budget-metric budget-per-person"><span>CHI PHÍ BÌNH QUÂN / NGƯỜI</span><strong id="expense-per-person" aria-live="polite">Đang tải…</strong><small id="expense-split-label">Đang tính số người…</small></div>
+      </div>
+      <p class="expense-person-heading" id="expense-person-heading" hidden>TỔNG SỐ TIỀN TỪNG NGƯỜI ĐÃ CHI</p>
+      <ul class="expense-person-list" id="expense-person-list" aria-labelledby="expense-person-heading" hidden></ul>
+      <ul class="expense-list" id="expense-list" aria-live="polite"></ul>
+    </section>
+  </div>
+
+  <section class="wrap panel participants-panel" id="participants-section" aria-labelledby="participants-title">
+    <div class="panel-head"><span class="panel-index">03</span><h2 id="participants-title">Người tham gia</h2><span class="participants-count" id="participant-count">Đang tải…</span><p>Danh sách thành viên của chuyến đi Hà Giang.</p></div>
+    <ol class="participant-list" id="participant-list" aria-live="polite"><li class="empty">Đang tải danh sách…</li></ol>
+  </section>
+
+  <section class="wrap panel" aria-labelledby="sessions-title">
+    <div class="panel-head"><div class="session-heading"><h2 id="sessions-title">Thiết bị đã đăng nhập</h2><span class="session-live" id="session-live"><i aria-hidden="true"></i><span id="session-live-label">Đang kết nối</span></span></div><p>Tên người và thiết bị được đồng bộ trực tiếp khi có đăng nhập hoặc thay đổi trạng thái.</p></div>
+    <ul class="session-list" id="session-list"><li class="empty">Đang tải danh sách…</li></ul>
+  </section>
+
   <footer>
-    <div class="wrap">Lịch trình lưu trên Supabase. Ảnh được tải từ Wikipedia và Wikimedia Commons khi mở trang, cần có kết nối mạng. Nếu ảnh chưa khớp địa danh, dùng liên kết “Xem thêm ảnh” trên từng mục.</div>
+    <div class="wrap">Lịch trình, phân công, chi phí và nhật ký thiết bị lưu trên Supabase. Ảnh tải lên được lưu trong Storage.</div>
   </footer>
 
   <dialog id="pw-dialog" aria-labelledby="pw-title">
@@ -305,6 +796,16 @@
         <button type="button" class="btn" data-close>Hủy</button>
         <button type="submit" class="btn primary">Mở khóa</button>
       </div>
+    </form>
+  </dialog>
+
+  <dialog id="profile-dialog" aria-labelledby="profile-title">
+    <form class="dlg" id="profile-form">
+      <h2 id="profile-title">Chọn thành viên đăng nhập</h2>
+      <label class="field">Bạn là ai trong chuyến đi?<select id="login-name" required><option value="">Chọn tên trong danh sách</option></select></label>
+      <label class="field">Tên máy hoặc thiết bị<input id="device-name" maxlength="100" required autocomplete="off"></label>
+      <p class="hint">Thành viên và thiết bị được ghi vào nhật ký đăng nhập. Tên thành viên được nhớ trên cookie của trình duyệt này.</p>
+      <div class="dlg-actions"><button type="button" class="btn" data-close>Hủy</button><button type="submit" class="btn primary">Lưu và đăng nhập</button></div>
     </form>
   </dialog>
 
@@ -337,6 +838,13 @@
         </div>
         <p class="hint">Bấm “Tìm trên Google”, mở ảnh bạn chọn ở cỡ lớn, nhấn giữ hoặc bấm chuột phải vào ảnh, chọn “Sao chép địa chỉ hình ảnh” rồi dán vào ô trên. Ảnh được thêm và chọn ngay.</p>
         <p class="hint" id="image-status"></p>
+        <div class="upload-row">
+          <input type="file" id="image-file" accept="image/jpeg,image/png,image/webp">
+          <button type="button" class="btn" id="upload-image">Tải ảnh lên Storage</button>
+          <button type="button" class="btn" id="load-storage-images">Quản lý ảnh Storage</button>
+        </div>
+        <p class="hint">JPG, PNG hoặc WebP tối đa 5 MB. Có thể chọn ảnh đã lưu, thay ảnh hoặc xóa file không còn được lịch trình sử dụng.</p>
+        <div class="storage-gallery" id="storage-gallery" hidden></div>
         <div class="thumbs" id="thumbs"></div>
       </div>
       <div class="dlg-actions">
@@ -346,6 +854,38 @@
     </form>
   </dialog>
 
+  <dialog id="task-dialog" aria-labelledby="task-dialog-title">
+    <form class="dlg" id="task-form">
+      <h2 id="task-dialog-title">Thêm công việc</h2>
+      <label class="field">Tên công việc<input name="title" maxlength="180" required></label>
+      <label class="field">Người phụ trách<input name="assignee" maxlength="100" list="assignee-options" required></label>
+      <datalist id="assignee-options"></datalist>
+      <label class="field">Mô tả<textarea name="description" maxlength="3000"></textarea></label>
+      <div class="row">
+        <label class="field" style="flex:1">Trạng thái<select name="status" style="padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:400 1rem var(--font)"><option>Chưa bắt đầu</option><option>Đang thực hiện</option><option>Hoàn thành</option></select></label>
+        <label class="field" style="flex:1">Hạn hoàn thành (không bắt buộc)<input name="due_date" type="date"></label>
+      </div>
+      <label class="field">Giờ hoàn thành (không bắt buộc)<input name="due_time" type="time"></label>
+      <div class="dlg-actions"><button type="button" class="btn" data-close>Hủy</button><button type="submit" class="btn primary">Lưu công việc</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="expense-dialog" aria-labelledby="expense-dialog-title">
+    <form class="dlg" id="expense-form">
+      <h2 id="expense-dialog-title">Thêm khoản chi</h2>
+      <label class="field">Tên khoản chi<input name="title" maxlength="180" required placeholder="Ví dụ: Vé tham quan"></label>
+      <label class="field">Số tiền dự tính (VNĐ)<input name="amount" type="number" min="0" step="1000" required></label>
+      <label class="field">Người đã chi<select name="paid_by" required><option value="">Chọn thành viên đã thanh toán</option></select></label>
+      <label class="field">Ghi chú<textarea name="note" maxlength="3000"></textarea></label>
+      <label class="field">Ảnh đính kèm (JPG, PNG hoặc WebP, tối đa 5 MB)<input id="expense-file" type="file" accept="image/jpeg,image/png,image/webp"></label>
+      <div class="upload-row"><button type="button" class="btn" id="upload-expense-image">Tải ảnh lên Storage</button><button type="button" class="btn" id="clear-expense-image">Bỏ ảnh</button></div>
+      <p class="hint" id="expense-image-status" role="status"></p>
+      <img class="expense-preview" id="expense-preview" alt="Ảnh chi phí xem trước" hidden>
+      <div class="dlg-actions"><button type="button" class="btn" data-close>Hủy</button><button type="submit" class="btn primary">Lưu khoản chi</button></div>
+    </form>
+  </dialog>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 (() => {
   "use strict";
@@ -354,8 +894,9 @@
      anonKey là khóa công khai, quyền thực tế do phân quyền trong file SQL quyết định. */
   const SUPABASE = {
     url: "https://uijplnwxyrhlgmenzyls.supabase.co",
-    anonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVpanBsbnd4eXJobGdtZW56eWxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIxODQ5ODAsImV4cCI6MjA4Nzc2MDk4MH0.qa8h6a6AeK7nfBJJytwMiJYoD2p-QWROA6ylm5RpTm8"
+    anonKey: "sb_publishable_7kvxeWEUW3uRGoSiMVHyWA_Szo9gafe"
   };
+  const realtimeClient = window.supabase?.createClient(SUPABASE.url, SUPABASE.anonKey) || null;
 
   async function request(path, { method = "GET", body } = {}) {
     const res = await fetch(`${SUPABASE.url}/rest/v1/${path}`, {
@@ -406,15 +947,69 @@
 
   /* ---------- Dữ liệu ---------- */
   let days = [];
+  let tasks = [];
+  let expenses = [];
+  let tripParticipants = [];
+  let participantsLoadError = "";
+  let sessions = [];
   let editing = false;
   let editPassword = "";
+  let activeSessionId = null;
+  let taskFilterValue = "*";
+  let heartbeatTimer = null;
+  let sessionChannel = null;
+  let sessionRealtimeConnected = false;
+  let sessionRefreshPromise = null;
+  let sessionRefreshDebounce = null;
+  let sessionFallbackTimer = null;
+
+  function getCookie(name) {
+    const value = document.cookie.split(";").map((part) => part.trim()).find((part) => part.startsWith(`${name}=`));
+    if (!value) return "";
+    try { return decodeURIComponent(value.slice(name.length + 1)); } catch { return ""; }
+  }
+
+  function setCookie(name, value, maxAge = 31536000) {
+    const secure = location.protocol === "https:" ? "; Secure" : "";
+    document.cookie = `${name}=${encodeURIComponent(value)}; Max-Age=${maxAge}; Path=/; SameSite=Lax${secure}`;
+  }
+
+  const deviceCookieId = getCookie("ha_device_id") || crypto.randomUUID();
+  if (!getCookie("ha_device_id")) setCookie("ha_device_id", deviceCookieId);
+  taskFilterValue = getCookie("ha_task_filter") || "*";
+
+  function readProfile() {
+    let profile = null;
+    try { profile = JSON.parse(localStorage.getItem("ha_login_profile") || "null"); }
+    catch { profile = null; }
+    return {
+      name: getCookie("ha_login_participant") || profile?.name || "",
+      device: profile?.device || ""
+    };
+  }
+
+  function defaultDeviceName() {
+    const ua = navigator.userAgent;
+    const browser = /Edg\//.test(ua) ? "Edge" : /Firefox\//.test(ua) ? "Firefox" : /Chrome\//.test(ua) ? "Chrome" : /Safari\//.test(ua) ? "Safari" : "Trình duyệt";
+    const platform = /Windows/.test(ua) ? "Windows" : /Mac OS/.test(ua) ? "Mac" : /Android/.test(ua) ? "Android" : /iPhone|iPad/.test(ua) ? "iPhone/iPad" : /Linux/.test(ua) ? "Linux" : "Thiết bị";
+    return `${platform} · ${browser}`;
+  }
 
   async function loadItinerary() {
-    const [dayRows, stopRows] = await Promise.all([
+    const [dayRows, stopRows, taskRows, expenseRows, participantResult] = await Promise.all([
       request("itinerary_days?select=*&order=sort_order"),
-      request("itinerary_stops?select=*&order=sort_order,created_at")
+      request("itinerary_stops?select=*&order=sort_order,created_at"),
+      request("assigned_tasks?select=*&order=created_at.desc"),
+      request("estimated_expenses?select=*&order=created_at.desc"),
+      request("trip_participants?select=id,name,sort_order&order=sort_order,id")
+        .then((rows) => ({ rows, error: "" }))
+        .catch((error) => ({ rows: [], error: error.message }))
     ]);
     days = dayRows.map((day) => ({ ...day, stops: stopRows.filter((stop) => stop.day_id === day.id) }));
+    tasks = taskRows;
+    expenses = expenseRows;
+    tripParticipants = participantResult.rows;
+    participantsLoadError = participantResult.error;
   }
 
   function findStop(id) {
@@ -444,6 +1039,22 @@
     box.hidden = !message;
     box.textContent = message || "";
     box.classList.toggle("error", isError);
+  }
+
+  let heroCoverRequested = false;
+
+  async function loadHeroCover() {
+    if (heroCoverRequested || !days.length) return;
+    heroCoverRequested = true;
+    const stops = days.flatMap((day) => day.stops);
+    const scenicStop = stops.find((stop) => /mã pí lèng|nho quế|lũng cú|đồng văn/i.test(`${stop.title} ${stop.image_query || ""}`))
+      || stops.find((stop) => stop.image_url || stop.image_query);
+    const url = scenicStop?.image_url || (await searchImages(scenicStop?.image_query || scenicStop?.title || "Mã Pí Lèng Hà Giang"))[0];
+    if (!url) return;
+    const cover = $("hero-cover");
+    cover.onload = () => cover.classList.add("is-loaded");
+    cover.onerror = () => cover.classList.remove("is-loaded");
+    cover.src = url;
   }
 
   const stopHtml = (stop) => `
@@ -495,11 +1106,17 @@
       .map((day) => `<a href="#d-${day.id}">${esc(day.label)} (${parseDate(day.trip_date).short})</a>`)
       .join("");
 
-    $("itinerary").innerHTML = days.map((day) => {
+    const stopCount = days.reduce((total, day) => total + day.stops.length, 0);
+    $("itinerary").innerHTML = `
+      <div class="itinerary-intro">
+        <div><span class="section-kicker">HÀNH TRÌNH CỦA BẠN</span><h2>Từng chặng đường</h2><p>Lịch trình theo ngày, dễ xem và dễ cùng nhau cập nhật.</p></div>
+        <span class="itinerary-count"><strong>${days.length}</strong> ngày <i>·</i> ${stopCount} điểm dừng</span>
+      </div>` + days.map((day, dayIndex) => {
       const date = parseDate(day.trip_date);
       return `
-      <section class="day" id="d-${day.id}">
+      <section class="day" id="d-${day.id}" style="--day-index:${dayIndex}">
         <header class="day-head">
+          <span class="day-index">CHẶNG ${String(dayIndex + 1).padStart(2, "0")}</span>
           <div class="date"><b>${date.day}</b><span>tháng ${date.month}</span></div>
           <div><h2>${esc(day.title)}</h2><p>${esc(day.subtitle)}</p></div>
         </header>
@@ -512,11 +1129,190 @@
 
     $("itinerary").querySelectorAll("figure[data-fig]").forEach((figure) =>
       hydrate(figure, findStop(figure.dataset.fig).stop));
+    loadHeroCover();
+    renderTasks();
+    renderExpenses();
+    renderParticipants();
+  }
+
+  function renderTasks() {
+    const names = [...new Set(tasks.map((task) => task.assignee).filter(Boolean))].sort((a, b) => a.localeCompare(b, "vi"));
+    if (taskFilterValue !== "*" && !names.includes(taskFilterValue)) taskFilterValue = "*";
+    $("task-filter").innerHTML = `<option value="*">Tất cả mọi người</option>` + names.map((name) => `<option value="${esc(name)}">${esc(name)}</option>`).join("");
+    $("task-filter").value = taskFilterValue;
+    $("assignee-options").innerHTML = names.map((name) => `<option value="${esc(name)}"></option>`).join("");
+    const visible = tasks.filter((task) => taskFilterValue === "*" || task.assignee === taskFilterValue);
+    $("task-list").innerHTML = visible.length ? visible.map((task) => `
+      <li class="task-card"><div><h3>${esc(task.title)}</h3>
+        ${task.description ? `<p>${esc(task.description)}</p>` : ""}
+        <div class="task-meta"><span>${esc(task.assignee)}</span><span>${esc(task.status || "Chưa bắt đầu")}</span>${task.due_date ? `<span>Hạn: ${esc(task.due_date.split("T")[0])}${task.due_time ? ` · ${esc(task.due_time.slice(0, 5))}` : ""}</span>` : task.due_time ? `<span>Giờ: ${esc(task.due_time.slice(0, 5))}</span>` : ""}</div>
+      </div>
+      ${editing ? `<div class="task-actions"><button type="button" class="btn sm" data-task-action="edit" data-id="${task.id}">Sửa</button><button type="button" class="btn sm danger" data-task-action="delete" data-id="${task.id}">Xóa</button></div>` : ""}</li>`).join("") : `<li class="empty">${tasks.length ? "Không có công việc phù hợp với bộ lọc." : "Chưa có công việc nào được phân công."}</li>`;
+    renderExpenseSummary();
+  }
+
+  const formatVnd = (amount) => new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND", maximumFractionDigits: 0 }).format(Number(amount) || 0);
+
+  function getExpenseParticipants() {
+    if (tripParticipants.length) return tripParticipants.map((participant) => participant.name);
+    const names = new Map();
+    [...sessions.map((session) => session.user_name), ...tasks.map((task) => task.assignee)].forEach((value) => {
+      const name = String(value ?? "").trim().normalize("NFC");
+      const key = name.toLocaleLowerCase("vi");
+      if (name && !names.has(key)) names.set(key, name);
+    });
+    return [...names.values()].sort((a, b) => a.localeCompare(b, "vi"));
+  }
+
+  function participantInitials(name) {
+    const words = String(name).trim().split(/\s+/).filter(Boolean);
+    if (!words.length) return "?";
+    return words.length === 1
+      ? words[0].slice(0, 2).toLocaleUpperCase("vi")
+      : `${words[0][0]}${words[words.length - 1][0]}`.toLocaleUpperCase("vi");
+  }
+
+  function renderParticipants() {
+    const list = $("participant-list");
+    $("participant-count").textContent = `${tripParticipants.length} thành viên`;
+    syncParticipantSelect($("login-name"), readProfile().name);
+    syncParticipantSelect($("expense-form").elements.paid_by, getCookie("ha_login_participant"));
+    if (!tripParticipants.length) {
+      list.innerHTML = `<li class="empty">${participantsLoadError ? `Không tải được danh sách: ${esc(participantsLoadError)}` : "Chưa có người tham gia."}</li>`;
+      return;
+    }
+    list.innerHTML = tripParticipants.map((participant) => `
+      <li class="participant-card"><span class="participant-avatar" aria-hidden="true">${esc(participantInitials(participant.name))}</span><span class="participant-name">${esc(participant.name)}</span></li>`).join("");
+  }
+
+  function syncParticipantSelect(select, preferredName = "") {
+    const currentName = select.value;
+    const names = tripParticipants.map((participant) => participant.name);
+    const selectedName = [currentName, preferredName].find((name) => names.includes(name)) || "";
+    const placeholder = select.id === "login-name" ? "Chọn tên trong danh sách" : "Chọn thành viên đã thanh toán";
+    select.innerHTML = `<option value="">${placeholder}</option>`
+      + tripParticipants.map((participant) => `<option value="${esc(participant.name)}">${esc(participant.name)}</option>`).join("");
+    select.value = selectedName;
+  }
+
+  function renderExpenseSummary() {
+    const total = expenses.reduce((sum, expense) => sum + (Number(expense.amount) || 0), 0);
+    const people = getExpenseParticipants();
+    const share = people.length ? total / people.length : 0;
+    $("expense-summary").textContent = formatVnd(total);
+    $("expense-count").textContent = `${expenses.length} khoản chi`;
+    $("expense-per-person").textContent = people.length ? formatVnd(share) : "—";
+    $("expense-split-label").textContent = people.length
+      ? `Chia đều cho ${people.length} thành viên`
+      : "Đăng nhập hoặc phân công thành viên để tính";
+    const paidTotals = new Map(people.map((name) => [name.toLocaleLowerCase("vi"), { name, amount: 0 }]));
+    let unassignedTotal = 0;
+    expenses.forEach((expense) => {
+      const amount = Number(expense.amount) || 0;
+      const name = String(expense.paid_by || "").trim().normalize("NFC");
+      if (!name) {
+        unassignedTotal += amount;
+        return;
+      }
+      const key = name.toLocaleLowerCase("vi");
+      const person = paidTotals.get(key) || { name, amount: 0 };
+      person.amount += amount;
+      paidTotals.set(key, person);
+    });
+    const personList = $("expense-person-list");
+    personList.hidden = !people.length;
+    $("expense-person-heading").hidden = !people.length;
+    personList.innerHTML = [...paidTotals.values(), ...(unassignedTotal ? [{ name: "Chưa ghi nhận người chi", amount: unassignedTotal }] : [])]
+      .map((person) => `<li><span>${esc(person.name)}</span><strong>${formatVnd(person.amount)}</strong></li>`).join("");
+  }
+
+  function renderExpenses() {
+    renderExpenseSummary();
+    $("expense-list").innerHTML = expenses.length ? expenses.map((expense) => `
+      <li class="expense-card">
+        ${expense.image_url ? `<img src="${esc(expense.image_url)}" alt="Ảnh ${esc(expense.title)}" loading="lazy">` : `<div class="empty">Chưa có ảnh</div>`}
+        <div><h3>${esc(expense.title)}</h3><div class="expense-amount">${formatVnd(expense.amount)}</div><p class="expense-paid-by${expense.paid_by ? "" : " is-unassigned"}">${expense.paid_by ? `Người chi: <strong>${esc(expense.paid_by)}</strong>` : "Chưa ghi nhận người chi"}</p>${expense.note ? `<p>${esc(expense.note)}</p>` : ""}</div>
+        ${editing ? `<div class="expense-actions"><button type="button" class="btn sm" data-expense-action="edit" data-id="${expense.id}">Sửa</button><button type="button" class="btn sm danger" data-expense-action="delete" data-id="${expense.id}">Xóa</button></div>` : ""}
+      </li>`).join("") : `<li class="empty">Chưa có khoản chi dự tính nào.</li>`;
+  }
+
+  function renderSessions() {
+    renderExpenseSummary();
+    const list = $("session-list");
+    if (!sessions.length) {
+      list.innerHTML = `<li class="empty">Chưa có thiết bị nào đăng nhập.</li>`;
+      return;
+    }
+    list.innerHTML = sessions.map((session) => {
+      const seen = new Date(session.last_seen_at || session.logged_in_at);
+      const online = !session.logged_out_at && Date.now() - seen.getTime() < 180000;
+      const lastSeen = Number.isNaN(seen.getTime()) ? "" : seen.toLocaleString("vi-VN");
+      return `<li class="session-row"><span><strong>${esc(session.user_name)}</strong> · ${esc(session.device_name)}${session.device_cookie === deviceCookieId ? " · Thiết bị này" : ""}<br><small>Đăng nhập: ${esc(new Date(session.logged_in_at).toLocaleString("vi-VN"))} · Hoạt động cuối: ${esc(lastSeen)}</small></span><span class="session-state${online ? "" : " offline"}">${online ? "Đang hoạt động" : "Đã đăng xuất / không hoạt động"}</span></li>`;
+    }).join("");
+  }
+
+  function setSessionRealtimeStatus(connected) {
+    sessionRealtimeConnected = connected;
+    $("session-live").classList.toggle("is-live", connected);
+    $("session-live-label").textContent = connected
+      ? "Cập nhật trực tiếp"
+      : realtimeClient ? "Đang kết nối lại · tự đồng bộ" : "Tự đồng bộ mỗi 15 giây";
+  }
+
+  function scheduleSessionRefresh() {
+    clearTimeout(sessionRefreshDebounce);
+    sessionRefreshDebounce = setTimeout(() => refreshSessions(), 180);
+  }
+
+  async function refreshSessions() {
+    if (sessionRefreshPromise) return sessionRefreshPromise;
+    sessionRefreshPromise = (async () => {
+      try {
+        sessions = await request("device_sessions?select=device_cookie,user_name,device_name,logged_in_at,last_seen_at,logged_out_at&order=logged_in_at.desc&limit=50");
+        renderSessions();
+      } catch (error) {
+        $("session-list").innerHTML = `<li class="empty">${esc(error.message)} · Chạy migration Supabase để bật nhật ký thiết bị.</li>`;
+      } finally {
+        sessionRefreshPromise = null;
+      }
+    })();
+    return sessionRefreshPromise;
+  }
+
+  function startSessionRealtime() {
+    setSessionRealtimeStatus(false);
+    sessionFallbackTimer = setInterval(() => {
+      renderSessions();
+      if (!sessionRealtimeConnected) refreshSessions();
+    }, 15000);
+    window.addEventListener("focus", refreshSessions);
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") refreshSessions();
+    });
+    if (!realtimeClient) return;
+
+    try {
+      sessionChannel = realtimeClient
+        .channel("device-sessions-live")
+        .on("postgres_changes", {
+          event: "*",
+          schema: "public",
+          table: "device_sessions"
+        }, scheduleSessionRefresh)
+        .subscribe((status) => {
+          const connected = status === "SUBSCRIBED";
+          setSessionRealtimeStatus(connected);
+          if (connected) refreshSessions();
+        });
+    } catch {
+      setSessionRealtimeStatus(false);
+    }
   }
 
   async function refresh() {
     await loadItinerary();
     render();
+    await refreshSessions();
   }
 
   /* ---------- Khóa chỉnh sửa (mật khẩu được máy chủ kiểm tra) ---------- */
@@ -524,13 +1320,45 @@
   const pwDialog = $("pw-dialog");
   const pwInput = $("pw-input");
   const pwError = $("pw-error");
+  const profileDialog = $("profile-dialog");
+  let pendingLoginPassword = "";
+
+  async function registerDevice(password, profile) {
+    activeSessionId = crypto.randomUUID();
+    await rpc("register_device_session", {
+      p_password: password,
+      p_session_id: activeSessionId,
+      p_device_id: deviceCookieId,
+      p_user_name: profile.name,
+      p_device_name: profile.device
+    });
+    editPassword = password;
+    setEditing(true);
+    await refreshSessions();
+  }
 
   function setEditing(on) {
+    const wasEditing = editing;
     editing = on;
     if (!on) editPassword = "";
     document.body.classList.toggle("editing", on);
     toggleButton.textContent = on ? "Xong" : "Chỉnh sửa";
     toggleButton.setAttribute("aria-pressed", String(on));
+    renderTasks();
+    renderExpenses();
+    if (heartbeatTimer) clearInterval(heartbeatTimer);
+    heartbeatTimer = null;
+    if (on) {
+      heartbeatTimer = setInterval(() => {
+        if (document.visibilityState === "visible" && activeSessionId) {
+          rpc("touch_device_session", { p_session_id: activeSessionId }).then(refreshSessions).catch(() => {});
+        }
+      }, 60000);
+    } else if (wasEditing) {
+      const closingSessionId = activeSessionId;
+      activeSessionId = null;
+      if (closingSessionId) rpc("close_device_session", { p_session_id: closingSessionId }).then(refreshSessions).catch(() => {});
+    }
   }
 
   toggleButton.addEventListener("click", () => {
@@ -546,9 +1374,14 @@
     try {
       const ok = await rpc("check_edit_password", { p_password: pwInput.value });
       if (!ok) throw new Error("Mật khẩu không đúng.");
-      editPassword = pwInput.value;
+      pendingLoginPassword = pwInput.value;
       pwDialog.close();
-      setEditing(true);
+      const profile = readProfile();
+      syncParticipantSelect($("login-name"), profile.name);
+      $("login-name").value = profile?.name || "";
+      $("device-name").value = profile?.device || defaultDeviceName();
+      profileDialog.showModal();
+      $("login-name").focus();
     } catch (error) {
       pwError.textContent = error.message;
       pwError.hidden = false;
@@ -556,8 +1389,42 @@
     }
   });
 
+  $("profile-form").addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const profile = { name: $("login-name").value.trim(), device: $("device-name").value.trim() };
+    if (!tripParticipants.some((participant) => participant.name === profile.name)) {
+      showStatus("Chọn tên của bạn trong danh sách người tham gia.", true);
+      return;
+    }
+    const submit = event.currentTarget.querySelector("[type=submit]");
+    submit.disabled = true;
+    try {
+      await registerDevice(pendingLoginPassword, profile);
+      setCookie("ha_login_participant", profile.name);
+      localStorage.setItem("ha_login_profile", JSON.stringify(profile));
+      pendingLoginPassword = "";
+      profileDialog.close();
+      showStatus("");
+    } catch (error) {
+      showStatus(error.message, true);
+    } finally {
+      submit.disabled = false;
+    }
+  });
+  profileDialog.addEventListener("close", () => { pendingLoginPassword = ""; });
+
   document.querySelectorAll("[data-close]").forEach((button) =>
     button.addEventListener("click", () => button.closest("dialog").close()));
+
+  window.addEventListener("pagehide", () => {
+    if (!editing || !activeSessionId) return;
+    fetch(`${SUPABASE.url}/rest/v1/rpc/close_device_session`, {
+      method: "POST",
+      headers: { apikey: SUPABASE.anonKey, Authorization: `Bearer ${SUPABASE.anonKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ p_session_id: activeSessionId }),
+      keepalive: true
+    }).catch(() => {});
+  });
 
   /* Chạy một thao tác ghi, rồi tải lại dữ liệu từ Supabase. */
   async function mutate(action) {
@@ -705,6 +1572,241 @@
     renderThumbs();
   }, true);
 
+  async function storageRequest(action, extra = {}, file = null) {
+    let body;
+    const headers = { apikey: SUPABASE.anonKey, Authorization: `Bearer ${SUPABASE.anonKey}` };
+    if (file) {
+      body = new FormData();
+      body.append("action", action);
+      body.append("password", editPassword);
+      body.append("file", file);
+    } else {
+      headers["Content-Type"] = "application/json";
+      body = JSON.stringify({ action, password: editPassword, ...extra });
+    }
+    let response;
+    try {
+      response = await fetch(`${SUPABASE.url}/functions/v1/upload-image`, { method: "POST", headers, body });
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : String(error);
+      throw new Error(`Không gọi được Edge Function upload-image (${detail}). Function cần được deploy và phải cho phép CORS preflight OPTIONS.`);
+    }
+    let result;
+    try {
+      result = await response.json();
+    } catch {
+      throw new Error(`Edge Function trả về phản hồi không hợp lệ (HTTP ${response.status}). Kiểm tra nhật ký function trên Supabase.`);
+    }
+    if (!response.ok) throw new Error(result.error || `Storage lỗi (${response.status})`);
+    return result;
+  }
+
+  async function loadStorageGallery() {
+    const gallery = $("storage-gallery");
+    gallery.hidden = false;
+    gallery.innerHTML = `<p class="hint">Đang tải danh sách ảnh…</p>`;
+    try {
+      const result = await storageRequest("list");
+      const images = result.items || [];
+      gallery.innerHTML = images.length ? images.map((item) => `
+        <div class="storage-card">
+          <img src="${esc(item.publicUrl)}" alt="" loading="lazy">
+          <small>${esc(item.path)}</small>
+          <div class="storage-actions">
+            <button type="button" class="btn sm" data-storage-action="select" data-url="${esc(item.publicUrl)}">Chọn</button>
+            <button type="button" class="btn sm danger" data-storage-action="delete" data-path="${esc(item.path)}">Xóa</button>
+          </div>
+        </div>`).join("") : `<p class="empty">Storage chưa có ảnh nào.</p>`;
+    } catch (error) {
+      gallery.innerHTML = `<p class="empty">${esc(error.message)}</p>`;
+    }
+  }
+
+  $("load-storage-images").addEventListener("click", loadStorageGallery);
+  $("storage-gallery").addEventListener("click", async (event) => {
+    const button = event.target.closest("[data-storage-action]");
+    if (!button) return;
+    if (button.dataset.storageAction === "select") {
+      useImageUrl(button.dataset.url);
+      return;
+    }
+    const path = button.dataset.path;
+    if (!confirm(`Xóa vĩnh viễn ảnh “${path}” khỏi Storage?`)) return;
+    button.disabled = true;
+    try {
+      await storageRequest("delete", { path });
+      if (draft.image.endsWith(`/ha_giang/${path}`)) {
+        draft.image = "";
+        draft.manual = true;
+        renderThumbs();
+      }
+      imageStatus.textContent = "Đã xóa ảnh khỏi Storage.";
+      await loadStorageGallery();
+    } catch (error) {
+      imageStatus.textContent = error.message;
+      button.disabled = false;
+    }
+  });
+
+  $("upload-image").addEventListener("click", async () => {
+    const file = $("image-file").files[0];
+    if (!file) { imageStatus.textContent = "Chọn một tệp ảnh trước."; return; }
+    if (!/^image\/(jpeg|png|webp)$/.test(file.type) || file.size > 5 * 1024 * 1024) {
+      imageStatus.textContent = "Chỉ nhận JPG, PNG hoặc WebP tối đa 5 MB.";
+      return;
+    }
+    const button = $("upload-image");
+    button.disabled = true;
+    imageStatus.textContent = "Đang tải ảnh lên Storage…";
+    try {
+      const result = await storageRequest("upload", {}, file);
+      useImageUrl(result.publicUrl);
+      $("image-file").value = "";
+      imageStatus.textContent = "Ảnh đã tải lên Storage; bấm Lưu để gắn vào lịch trình.";
+      await loadStorageGallery();
+    } catch (error) {
+      imageStatus.textContent = `${error.message}. Kiểm tra Edge Function upload-image và bucket ha_giang.`;
+    } finally {
+      button.disabled = false;
+    }
+  });
+
+  const expenseDialog = $("expense-dialog");
+  const expenseForm = $("expense-form");
+  let expenseDraftId = null;
+  let expenseDraftImage = "";
+
+  function showExpenseImage(url) {
+    expenseDraftImage = url || "";
+    const preview = $("expense-preview");
+    preview.hidden = !expenseDraftImage;
+    if (expenseDraftImage) preview.src = expenseDraftImage;
+    else preview.removeAttribute("src");
+  }
+
+  function openExpenseEditor(id = null) {
+    const expense = id ? expenses.find((item) => item.id === id) : null;
+    expenseDraftId = expense?.id ?? null;
+    expenseForm.reset();
+    syncParticipantSelect(expenseForm.elements.paid_by, expense?.paid_by || getCookie("ha_login_participant"));
+    expenseForm.elements.title.value = expense?.title ?? "";
+    expenseForm.elements.amount.value = expense?.amount ?? "";
+    expenseForm.elements.paid_by.value = expense?.paid_by || getCookie("ha_login_participant") || "";
+    expenseForm.elements.note.value = expense?.note ?? "";
+    $("expense-image-status").textContent = "";
+    showExpenseImage(expense?.image_url ?? "");
+    $("expense-dialog-title").textContent = expense ? "Sửa khoản chi" : "Thêm khoản chi";
+    expenseDialog.showModal();
+    expenseForm.elements.title.focus();
+  }
+
+  $("add-expense").addEventListener("click", () => { if (editing) openExpenseEditor(); });
+  $("upload-expense-image").addEventListener("click", async () => {
+    const file = $("expense-file").files[0];
+    if (!file) { $("expense-image-status").textContent = "Chọn một tệp ảnh trước."; return; }
+    if (!/^image\/(jpeg|png|webp)$/.test(file.type) || file.size > 5 * 1024 * 1024) {
+      $("expense-image-status").textContent = "Chỉ nhận JPG, PNG hoặc WebP tối đa 5 MB.";
+      return;
+    }
+    const button = $("upload-expense-image");
+    button.disabled = true;
+    $("expense-image-status").textContent = "Đang tải ảnh lên Storage…";
+    try {
+      const result = await storageRequest("upload", {}, file);
+      showExpenseImage(result.publicUrl);
+      $("expense-file").value = "";
+      $("expense-image-status").textContent = "Ảnh đã lưu trong Storage và được gắn vào khoản chi khi bạn bấm Lưu.";
+    } catch (error) {
+      $("expense-image-status").textContent = `${error.message}. Kiểm tra Edge Function upload-image và bucket ha_giang.`;
+    } finally {
+      button.disabled = false;
+    }
+  });
+  $("clear-expense-image").addEventListener("click", () => {
+    showExpenseImage("");
+    $("expense-file").value = "";
+    $("expense-image-status").textContent = "Ảnh sẽ được gỡ khỏi khoản chi khi bạn lưu.";
+  });
+  expenseForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!editing) return;
+    const submit = expenseForm.querySelector("[type=submit]");
+    submit.disabled = true;
+    const saved = await mutate(() => rpc("save_estimated_expense", {
+      p_password: editPassword,
+      p_id: expenseDraftId,
+      p_title: expenseForm.elements.title.value.trim(),
+      p_amount: Number(expenseForm.elements.amount.value),
+      p_note: expenseForm.elements.note.value.trim(),
+      p_image_url: expenseDraftImage || null,
+      p_paid_by: expenseForm.elements.paid_by.value || null
+    }));
+    submit.disabled = false;
+    if (saved) expenseDialog.close();
+  });
+  $("expense-list").addEventListener("click", (event) => {
+    const button = event.target.closest("[data-expense-action]");
+    if (!button || !editing) return;
+    const expense = expenses.find((item) => item.id === button.dataset.id);
+    if (!expense) return;
+    if (button.dataset.expenseAction === "edit") return openExpenseEditor(expense.id);
+    if (!confirm(`Xóa khoản chi “${expense.title}”?`)) return;
+    mutate(() => rpc("delete_estimated_expense", { p_password: editPassword, p_id: expense.id }));
+  });
+
+  const taskDialog = $("task-dialog");
+  const taskForm = $("task-form");
+  let taskDraftId = null;
+
+  function openTaskEditor(id = null) {
+    const task = id ? tasks.find((item) => item.id === id) : null;
+    taskDraftId = task?.id ?? null;
+    taskForm.reset();
+    taskForm.elements.title.value = task?.title ?? "";
+    taskForm.elements.assignee.value = task?.assignee ?? "";
+    taskForm.elements.description.value = task?.description ?? "";
+    taskForm.elements.status.value = task?.status ?? "Chưa bắt đầu";
+    taskForm.elements.due_date.value = task?.due_date?.split("T")[0] ?? "";
+    taskForm.elements.due_time.value = task?.due_time?.slice(0, 5) ?? "";
+    $("task-dialog-title").textContent = task ? "Sửa công việc" : "Thêm công việc";
+    taskDialog.showModal();
+    taskForm.elements.title.focus();
+  }
+
+  $("add-task").addEventListener("click", () => { if (editing) openTaskEditor(); });
+  $("task-filter").addEventListener("change", (event) => {
+    taskFilterValue = event.target.value;
+    setCookie("ha_task_filter", taskFilterValue);
+    renderTasks();
+  });
+  taskForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!editing) return;
+    const submit = taskForm.querySelector("[type=submit]");
+    submit.disabled = true;
+    const saved = await mutate(() => rpc("save_assigned_task_with_time", {
+      p_password: editPassword,
+      p_id: taskDraftId,
+      p_title: taskForm.elements.title.value.trim(),
+      p_assignee: taskForm.elements.assignee.value.trim(),
+      p_description: taskForm.elements.description.value.trim(),
+      p_status: taskForm.elements.status.value,
+      p_due_date: taskForm.elements.due_date.value || null,
+      p_due_time: taskForm.elements.due_time.value || null
+    }));
+    submit.disabled = false;
+    if (saved) taskDialog.close();
+  });
+  $("task-list").addEventListener("click", (event) => {
+    const button = event.target.closest("[data-task-action]");
+    if (!button || !editing) return;
+    const task = tasks.find((item) => item.id === button.dataset.id);
+    if (!task) return;
+    if (button.dataset.taskAction === "edit") return openTaskEditor(task.id);
+    if (!confirm(`Xóa công việc “${task.title}”?`)) return;
+    mutate(() => rpc("delete_assigned_task", { p_password: editPassword, p_id: task.id }));
+  });
+
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
     const submit = form.querySelector("[type=submit]");
@@ -746,11 +1848,12 @@
   });
 
   /* ---------- Khởi động ---------- */
+  startSessionRealtime();
   showStatus("Đang tải lịch trình…");
   refresh()
     .then(() => showStatus(""))
     .catch((error) => showStatus(
-      `Không tải được dữ liệu: ${error.message}. Hãy chắc chắn đã chạy file supabase-lich-trinh.sql.`, true));
+      `Không tải được dữ liệu: ${error.message}. Chạy supabase-expenses-and-task-time-migration.sql trong Supabase SQL Editor, đồng thời kiểm tra schema lịch trình hiện có.`, true));
 })();
 </script>
 </body>
