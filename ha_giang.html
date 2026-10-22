@@ -470,6 +470,8 @@
   .field select { padding: 10px 12px; }
   .field input:focus, .field textarea:focus, .field select:focus, .filter-row select:focus { border-color: #7da88d; outline: 3px solid rgb(79 137 100 / .14); }
   .hint { color: #7c8981; font-size: .75rem; }
+  .remember-device { display: flex; align-items: flex-start; gap: 9px; color: #455e50; font-size: .8rem; font-weight: 600; }
+  .remember-device input { width: 17px; height: 17px; flex: none; margin: 1px 0 0; accent-color: #28634f; }
   .thumb { border-color: #dce6dd; border-radius: 10px; }
   .thumb[aria-pressed="true"] { border-color: #39765b; box-shadow: 0 0 0 2px rgb(57 118 91 / .2); }
 
@@ -874,6 +876,8 @@
   .live-marker-popup a { color: #28634f; font: 600 .74rem var(--font); text-decoration: underline; text-underline-offset: 2px; }
   .leaflet-tooltip.live-name-tooltip { border: 0; border-radius: 6px; background: #234a38; box-shadow: 0 2px 6px rgb(0 0 0 / .2); color: white; font: 600 11px var(--font); }
   .leaflet-tooltip-top.live-name-tooltip::before { border-top-color: #234a38; }
+  .leaflet-tooltip.live-me-tooltip { border: 0; border-radius: 6px; background: #2773b8; box-shadow: 0 2px 6px rgb(0 0 0 / .2); color: white; font: 600 11px var(--font); }
+  .leaflet-tooltip-top.live-me-tooltip::before { border-top-color: #2773b8; }
   @media (max-width: 680px) {
     .location-fab { right: max(14px, env(safe-area-inset-right)); bottom: calc(80px + env(safe-area-inset-bottom)); min-height: 50px; padding-inline: 15px; }
     .location-popup { right: max(10px, env(safe-area-inset-right)); bottom: calc(144px + env(safe-area-inset-bottom)); left: max(10px, env(safe-area-inset-left)); width: auto; max-height: min(78vh, 780px, calc(100vh - 164px - env(safe-area-inset-bottom))); max-height: min(78dvh, 780px, calc(100dvh - 164px - env(safe-area-inset-bottom))); border-radius: 17px; }
@@ -934,6 +938,8 @@
       <div class="location-sharing">
         <span class="location-sharing-status" id="location-sharing-status" data-state="idle" role="status">Đăng nhập với tên của bạn để xem hoặc chia sẻ vị trí.</span>
         <button type="button" class="btn primary" id="location-login">Đăng nhập</button>
+        <button type="button" class="btn" id="location-me">Hiện vị trí của tôi</button>
+        <a class="btn" id="location-me-google" href="#" target="_blank" rel="noopener" hidden>Mở trên Google Maps</a>
         <button type="button" class="btn primary" id="location-start" hidden>Chia sẻ vị trí của tôi</button>
         <button type="button" class="btn" id="location-stop" hidden>Dừng chia sẻ</button>
       </div>
@@ -984,7 +990,7 @@
       </section>
       <section class="tools-view" id="view-devices" role="tabpanel" aria-labelledby="tab-devices" data-tools-view="devices" hidden>
         <section class="panel" id="sessions-section" aria-labelledby="sessions-title">
-          <div class="panel-head"><div class="session-heading"><h2 id="sessions-title">Thiết bị đã đăng nhập</h2><span class="session-live" id="session-live"><i aria-hidden="true"></i><span id="session-live-label">Đang kết nối</span></span></div><p>Tên người và thiết bị được đồng bộ trực tiếp khi có đăng nhập hoặc thay đổi trạng thái.</p></div>
+          <div class="panel-head"><div><div class="session-heading"><h2 id="sessions-title">Thiết bị đã đăng nhập</h2><span class="session-live" id="session-live"><i aria-hidden="true"></i><span id="session-live-label">Đang kết nối</span></span></div><p>Tên người và thiết bị được đồng bộ trực tiếp khi có đăng nhập hoặc thay đổi trạng thái.</p></div><button type="button" class="btn danger" id="forget-device" hidden>Đăng xuất thiết bị này</button></div>
           <ul class="session-list" id="session-list"><li class="empty">Đang tải danh sách…</li></ul>
         </section>
       </section>
@@ -1014,7 +1020,8 @@
       <h2 id="profile-title">Chọn thành viên đăng nhập</h2>
       <label class="field">Bạn là ai trong chuyến đi?<select id="login-name" required><option value="">Chọn tên trong danh sách</option></select></label>
       <label class="field">Tên máy hoặc thiết bị<input id="device-name" maxlength="100" required autocomplete="off"></label>
-      <p class="hint">Thành viên và thiết bị được ghi vào nhật ký đăng nhập. Tên thành viên được nhớ trên cookie của trình duyệt này.</p>
+      <label class="remember-device"><input id="remember-device" type="checkbox" checked>Ghi nhớ đăng nhập trên thiết bị này</label>
+      <p class="hint">Mật khẩu được lưu trong bộ nhớ trình duyệt trên thiết bị này để tự khôi phục khi mở web lại. Muốn xóa đăng nhập đã lưu, chọn Tiện ích → Thiết bị → Đăng xuất thiết bị này.</p>
       <div class="dlg-actions"><button type="button" class="btn" data-close>Hủy</button><button type="submit" class="btn primary">Lưu và đăng nhập</button></div>
     </form>
   </dialog>
@@ -1187,6 +1194,7 @@
   let sessionFallbackTimer = null;
   let liveLocationMap = null;
   let liveLocationMarkers = new Map();
+  let liveLocationMeMarker = null;
   let liveLocationPollingTimer = null;
   let liveLocationWatchId = null;
   let liveLocationHeartbeatTimer = null;
@@ -1212,6 +1220,8 @@
   const deviceCookieId = getCookie("ha_device_id") || crypto.randomUUID();
   if (!getCookie("ha_device_id")) setCookie("ha_device_id", deviceCookieId);
   taskFilterValue = getCookie("ha_task_filter") || "*";
+  const REMEMBERED_PASSWORD_KEY = "ha_remembered_edit_password";
+  const REMEMBER_DEVICE_PREFERENCE_KEY = "ha_remember_device";
 
   function readProfile() {
     let profile = null;
@@ -1221,6 +1231,13 @@
       name: getCookie("ha_login_participant") || profile?.name || "",
       device: profile?.device || ""
     };
+  }
+
+  function syncRememberedDeviceControl() {
+    const button = $("forget-device");
+    if (!button) return;
+    try { button.hidden = !localStorage.getItem(REMEMBERED_PASSWORD_KEY); }
+    catch { button.hidden = true; }
   }
 
   function defaultDeviceName() {
@@ -1586,32 +1603,82 @@
   const pwError = $("pw-error");
   const profileDialog = $("profile-dialog");
   let pendingLoginPassword = "";
+  const rememberDeviceCheckbox = $("remember-device");
+  try {
+    rememberDeviceCheckbox.checked = localStorage.getItem(REMEMBER_DEVICE_PREFERENCE_KEY) !== "false";
+  } catch {
+    rememberDeviceCheckbox.checked = true;
+  }
 
   async function registerDevice(password, profile) {
     activeSessionId = crypto.randomUUID();
-    await rpc("register_device_session", {
-      p_password: password,
-      p_session_id: activeSessionId,
-      p_device_id: deviceCookieId,
-      p_user_name: profile.name,
-      p_device_name: profile.device
-    });
+    try {
+      await rpc("register_device_session", {
+        p_password: password,
+        p_session_id: activeSessionId,
+        p_device_id: deviceCookieId,
+        p_user_name: profile.name,
+        p_device_name: profile.device
+      });
+    } catch (error) {
+      activeSessionId = null;
+      throw error;
+    }
     editPassword = password;
     setEditing(true);
     await refreshSessions();
   }
 
-  function setEditing(on) {
+  async function restoreRememberedDevice() {
+    let password = "";
+    try { password = localStorage.getItem(REMEMBERED_PASSWORD_KEY) || ""; }
+    catch { return; }
+    if (!password) return;
+
+    const profile = readProfile();
+    if (!profile.name || !tripParticipants.some((participant) => participant.name === profile.name)) {
+      try { localStorage.removeItem(REMEMBERED_PASSWORD_KEY); } catch {}
+      syncRememberedDeviceControl();
+      showStatus("Tên thành viên đã lưu không còn trong danh sách. Đăng nhập lại để chọn tên mới.", true);
+      return;
+    }
+
+    try {
+      const valid = await rpc("check_edit_password", { p_password: password });
+      if (!valid) {
+        try { localStorage.removeItem(REMEMBERED_PASSWORD_KEY); } catch {}
+        syncRememberedDeviceControl();
+        showStatus("Mật khẩu đã lưu không còn hợp lệ. Đăng nhập lại để tiếp tục.", true);
+        return;
+      }
+      const rememberedProfile = { ...profile, device: profile.device || defaultDeviceName() };
+      await registerDevice(password, rememberedProfile);
+      setCookie("ha_login_participant", rememberedProfile.name);
+      localStorage.setItem("ha_login_profile", JSON.stringify(rememberedProfile));
+      syncRememberedDeviceControl();
+      showStatus("");
+    } catch (error) {
+      showStatus(`Không khôi phục được đăng nhập đã lưu: ${error.message}`, true);
+    }
+  }
+
+  function setEditing(on, { clearRemembered = false } = {}) {
     const wasEditing = editing;
     if (!on && wasEditing) stopLocationSharing({ showResult: false });
     editing = on;
-    if (!on) editPassword = "";
+    if (!on) {
+      editPassword = "";
+      if (clearRemembered) {
+        try { localStorage.removeItem(REMEMBERED_PASSWORD_KEY); } catch {}
+      }
+    }
     document.body.classList.toggle("editing", on);
     toggleButton.textContent = on ? "Xong" : "Chỉnh sửa";
     toggleButton.setAttribute("aria-pressed", String(on));
     renderTasks();
     renderExpenses();
     syncLiveLocationControls();
+    syncRememberedDeviceControl();
     if (on && !$("location-popup").hidden) startLiveLocationPolling();
     if (!on) {
       stopLiveLocationPolling();
@@ -1637,6 +1704,11 @@
     if (editing) return setEditing(false);
     pwInput.value = "";
     pwError.hidden = true;
+    try {
+      rememberDeviceCheckbox.checked = localStorage.getItem(REMEMBER_DEVICE_PREFERENCE_KEY) !== "false";
+    } catch {
+      rememberDeviceCheckbox.checked = true;
+    }
     pwDialog.showModal();
     pwInput.focus();
   });
@@ -1670,14 +1742,25 @@
     }
     const submit = event.currentTarget.querySelector("[type=submit]");
     submit.disabled = true;
+    let rememberStorageFailed = false;
     try {
       await registerDevice(pendingLoginPassword, profile);
       setCookie("ha_login_participant", profile.name);
-      localStorage.setItem("ha_login_profile", JSON.stringify(profile));
+      try {
+        localStorage.setItem("ha_login_profile", JSON.stringify(profile));
+        localStorage.setItem(REMEMBER_DEVICE_PREFERENCE_KEY, String(rememberDeviceCheckbox.checked));
+        if (rememberDeviceCheckbox.checked) localStorage.setItem(REMEMBERED_PASSWORD_KEY, pendingLoginPassword);
+        else localStorage.removeItem(REMEMBERED_PASSWORD_KEY);
+        syncRememberedDeviceControl();
+      } catch {
+        rememberStorageFailed = true;
+      }
       syncLiveLocationControls();
       pendingLoginPassword = "";
       profileDialog.close();
-      showStatus("");
+      showStatus(rememberStorageFailed
+        ? "Đã đăng nhập nhưng trình duyệt không cho phép lưu đăng nhập trên thiết bị này."
+        : "", rememberStorageFailed);
     } catch (error) {
       showStatus(error.message, true);
     } finally {
@@ -1697,9 +1780,21 @@
   const locationPopup = $("location-popup");
   const locationToggle = $("location-toggle");
   const locationSharingStatus = $("location-sharing-status");
+  const locationMeButton = $("location-me");
+  const locationMeGoogleLink = $("location-me-google");
   const locationStartButton = $("location-start");
   const locationStopButton = $("location-stop");
   const liveMapDefaultCenter = [22.8, 104.98];
+
+  syncRememberedDeviceControl();
+  $("forget-device").addEventListener("click", () => {
+    if (editing) setEditing(false, { clearRemembered: true });
+    else {
+      try { localStorage.removeItem(REMEMBERED_PASSWORD_KEY); } catch {}
+      syncRememberedDeviceControl();
+    }
+    showStatus("Đã đăng xuất và xóa mật khẩu đã lưu trên thiết bị này.");
+  });
 
   function setLocationSharingStatus(message, state = "idle") {
     locationSharingStatus.textContent = message;
@@ -1738,6 +1833,61 @@
 
   function googleDirectionsUrl(latitude, longitude) {
     return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(`${latitude},${longitude}`)}`;
+  }
+
+  function googleMapViewUrl(latitude, longitude) {
+    return `https://www.google.com/maps/@?api=1&map_action=map&center=${encodeURIComponent(`${latitude},${longitude}`)}&zoom=17`;
+  }
+
+  function showMyLocation() {
+    if (!navigator.geolocation || !window.isSecureContext) {
+      setLocationSharingStatus("Định vị cần trình duyệt hỗ trợ GPS và trang được mở bằng HTTPS.", "error");
+      return;
+    }
+    if (!ensureLiveLocationMap()) return;
+    locationMeButton.disabled = true;
+    setLocationSharingStatus("Đang xác định vị trí của bạn…");
+    navigator.geolocation.getCurrentPosition((position) => {
+      locationMeButton.disabled = false;
+      const { latitude, longitude, accuracy } = position.coords;
+      const coordinates = [latitude, longitude];
+      liveLocationMap.setView(coordinates, 17, { animate: true });
+      if (!liveLocationMeMarker) {
+        liveLocationMeMarker = L.circleMarker(coordinates, {
+          radius: 9, color: "#fff", weight: 3, fillColor: "#2773b8", fillOpacity: 1
+        }).addTo(liveLocationMap);
+        liveLocationMeMarker.bindTooltip("Vị trí của tôi", {
+          permanent: true, direction: "top", className: "live-me-tooltip", offset: [0, -5]
+        });
+      } else {
+        liveLocationMeMarker.setLatLng(coordinates);
+      }
+      const popup = document.createElement("div");
+      popup.className = "live-marker-popup";
+      const label = document.createElement("strong");
+      label.textContent = "Vị trí hiện tại của bạn";
+      const accuracyLabel = document.createElement("small");
+      accuracyLabel.textContent = `GPS ±${Math.max(1, Math.round(accuracy || 0))} m`;
+      const googleLink = document.createElement("a");
+      googleLink.href = googleMapViewUrl(latitude, longitude);
+      googleLink.target = "_blank";
+      googleLink.rel = "noopener";
+      googleLink.textContent = "Mở và phóng to trên Google Maps";
+      popup.append(label, accuracyLabel, googleLink);
+      liveLocationMeMarker.bindPopup(popup).openPopup();
+      const googleMapUrl = googleMapViewUrl(latitude, longitude);
+      locationMeGoogleLink.href = googleMapUrl;
+      locationMeGoogleLink.hidden = false;
+      setLocationSharingStatus("Đã định vị và phóng to tới vị trí của bạn trên bản đồ. Bấm Mở trên Google Maps để xem bản đồ Google; vị trí này chưa được chia sẻ với đoàn.", "active");
+    }, (error) => {
+      locationMeButton.disabled = false;
+      const messages = {
+        1: "Bạn chưa cấp quyền GPS. Cho phép định vị trong trình duyệt rồi thử lại.",
+        2: "Thiết bị chưa xác định được vị trí. Bật GPS hoặc thử lại ngoài trời.",
+        3: "Đã hết thời gian chờ GPS. Thử định vị lại."
+      };
+      setLocationSharingStatus(messages[error.code] || "Không lấy được vị trí GPS trên thiết bị.", "error");
+    }, { enableHighAccuracy: true, maximumAge: 5000, timeout: 20000 });
   }
 
   function clearLiveLocationMarkers() {
@@ -1837,7 +1987,7 @@
       } catch (error) {
         if (token !== liveLocationRequestToken || locationPopup.hidden) return;
         setLocationSharingStatus(`${error.message} · Chạy supabase-live-location-migration.sql nếu chưa cài chức năng này.`, "error");
-        if (/mật khẩu|đăng nhập thiết bị/i.test(error.message)) setEditing(false);
+        if (/mật khẩu|đăng nhập thiết bị/i.test(error.message)) setEditing(false, { clearRemembered: true });
       } finally {
         liveLocationRefreshPromise = null;
       }
@@ -1883,7 +2033,7 @@
       setLocationSharingStatus(`${error.message} · Chạy supabase-live-location-migration.sql nếu chưa cài chức năng này.`, "error");
       if (/mật khẩu|đăng nhập bằng tên/i.test(error.message)) {
         stopLocationSharing({ showResult: false, notifyServer: false });
-        setEditing(false);
+        setEditing(false, { clearRemembered: true });
       }
     } finally {
       liveLocationUpdateInFlight = false;
@@ -2019,6 +2169,7 @@
   });
   locationStartButton.addEventListener("click", startLocationSharing);
   locationStopButton.addEventListener("click", () => stopLocationSharing());
+  locationMeButton.addEventListener("click", showMyLocation);
   $("live-people-list").addEventListener("click", (event) => {
     const button = event.target.closest("[data-live-person]");
     if (!button || !liveLocationMap) return;
@@ -2076,7 +2227,7 @@
       return true;
     } catch (error) {
       showStatus(error.message, true);
-      if (/mật khẩu/i.test(error.message)) setEditing(false);
+      if (/mật khẩu/i.test(error.message)) setEditing(false, { clearRemembered: true });
       return false;
     }
   }
@@ -2531,7 +2682,10 @@
   startSessionRealtime();
   showStatus("Đang tải lịch trình…");
   refresh()
-    .then(() => showStatus(""))
+    .then(async () => {
+      showStatus("");
+      await restoreRememberedDevice();
+    })
     .catch((error) => showStatus(
       `Không tải được dữ liệu: ${error.message}. Chạy supabase-expenses-and-task-time-migration.sql trong Supabase SQL Editor, đồng thời kiểm tra schema lịch trình hiện có.`, true));
 })();
