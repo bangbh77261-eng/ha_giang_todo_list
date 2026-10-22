@@ -6,6 +6,7 @@
 <title>Lịch trình Hà Giang 20–24/11</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
 <style>
   :root {
     --bg: #f3f6f5;
@@ -716,6 +717,172 @@
     .budget-overview { grid-template-columns: 1fr; gap: 12px; }
     .budget-per-person { padding: 12px 0 0; border-top: 1px solid #dce8dc; border-left: 0; }
   }
+
+  /* Fixed tools drawer for everything outside the itinerary */
+  .tools-fab {
+    position: fixed;
+    z-index: 40;
+    right: max(18px, env(safe-area-inset-right));
+    bottom: max(18px, env(safe-area-inset-bottom));
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    min-height: 54px;
+    padding: 0 19px;
+    border: 1px solid #204f3f;
+    border-radius: 999px;
+    background: #28634f;
+    color: #fff;
+    box-shadow: 0 12px 34px rgb(26 56 42 / .24);
+    font: 600 .88rem var(--font);
+    cursor: pointer;
+    transition: transform .18s ease, background .18s ease, box-shadow .18s ease;
+  }
+  .tools-fab:hover { transform: translateY(-2px); background: #1d503e; box-shadow: 0 16px 38px rgb(26 56 42 / .28); }
+  .tools-fab-icon { display: grid; place-items: center; width: 24px; height: 24px; border: 1px solid rgb(255 255 255 / .35); border-radius: 50%; font-size: 1.1rem; line-height: 1; }
+  .tools-popup {
+    position: fixed;
+    z-index: 39;
+    right: 20px;
+    bottom: calc(86px + env(safe-area-inset-bottom));
+    display: flex;
+    flex-direction: column;
+    width: min(620px, calc(100vw - 40px));
+    max-height: min(78dvh, 760px);
+    overflow: hidden;
+    border: 1px solid #d7e2d9;
+    border-radius: 20px;
+    background: #fff;
+    box-shadow: 0 24px 70px rgb(21 46 35 / .24), 0 3px 10px rgb(21 46 35 / .08);
+    color: var(--ink);
+    animation: tools-pop-in .18s ease-out;
+  }
+  .tools-popup[hidden] { display: none; }
+  @keyframes tools-pop-in { from { opacity: 0; transform: translateY(9px) scale(.985); } to { opacity: 1; transform: translateY(0) scale(1); } }
+  .tools-popup-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 17px 20px 13px; border-bottom: 1px solid #edf1ec; }
+  .tools-popup-head h2 { margin: 0; font-size: 1rem; letter-spacing: -.02em; }
+  .tools-popup-head p { margin: 2px 0 0; color: #7b8c81; font-size: .72rem; }
+  .tools-close { display: grid; flex: none; place-items: center; width: 40px; height: 40px; border: 1px solid #e0e8e1; border-radius: 12px; background: #fff; color: #53675b; font-size: 1.2rem; cursor: pointer; }
+  .tools-close:hover { background: #f0f5f0; }
+  .tools-tabs { display: flex; gap: 5px; overflow-x: auto; padding: 9px 14px; border-bottom: 1px solid #edf1ec; scrollbar-width: none; }
+  .tools-tabs::-webkit-scrollbar { display: none; }
+  .tools-tab { flex: 1 0 auto; min-height: 42px; padding: 7px 12px; border: 1px solid transparent; border-radius: 10px; background: transparent; color: #66776e; font: 600 .78rem var(--font); cursor: pointer; }
+  .tools-tab:hover { background: #f2f6f1; color: #28634f; }
+  .tools-tab[aria-selected="true"] { border-color: #dbe9dd; background: #eaf3eb; color: #28634f; }
+  .tools-scroll { min-height: 0; overflow: auto; overscroll-behavior: contain; padding: 16px; }
+  .tools-view[hidden] { display: none !important; }
+  .tools-view > .panel, .tools-view > .planning-grid > .panel { max-width: none; margin: 0; padding: 20px; border: 0; border-radius: 0; box-shadow: none; }
+  .tools-view > .planning-grid { display: grid; grid-template-columns: 1fr; gap: 14px; margin: 0; padding: 0; }
+  .tools-view .panel-head { gap: 10px; }
+  .tools-view .participant-list { grid-template-columns: repeat(auto-fit, minmax(min(100%, 235px), 1fr)); }
+  .participant-card { align-items: flex-start; flex-wrap: wrap; }
+  .participant-main { display: grid; flex: 1; gap: 7px; min-width: 0; }
+  .participant-title { display: flex; align-items: center; min-width: 0; }
+  .participant-person { display: flex; align-items: center; gap: 9px; min-width: 0; color: inherit; text-decoration: none; }
+  .participant-name { text-decoration: none; }
+  a.participant-person:hover .participant-name { color: #28634f; text-decoration: underline; text-underline-offset: 3px; }
+  .participant-location { overflow-wrap: anywhere; color: #78887d; font-size: .69rem; line-height: 1.45; }
+  .participant-contact { display: flex; flex-wrap: wrap; gap: 6px; }
+  .participant-contact a, .participant-contact button { min-height: 36px; }
+  .participant-missing { color: #839188; font-size: .7rem; }
+  .participant-actions { display: flex; flex-wrap: wrap; gap: 5px; }
+  .participant-contact .btn, .participant-actions .btn { min-height: 38px; padding-inline: 10px; font-size: .72rem; }
+  .participant-schema-hint { margin: 0 0 12px; padding: 10px 12px; border: 1px solid #f0dfbd; border-radius: 10px; background: #fff9eb; color: #765b2a; font-size: .76rem; }
+  .participant-schema-hint[hidden] { display: none; }
+  .tools-view .settlement-table { width: 100%; }
+  .tools-view .expense-list { max-height: none; }
+
+  @media (max-width: 680px) {
+    .tools-fab { right: max(14px, env(safe-area-inset-right)); bottom: max(14px, env(safe-area-inset-bottom)); min-height: 52px; padding-inline: 16px; }
+    .tools-popup { right: max(10px, env(safe-area-inset-right)); bottom: calc(76px + env(safe-area-inset-bottom)); left: max(10px, env(safe-area-inset-left)); width: auto; max-height: min(80dvh, 760px); border-radius: 17px; }
+    .tools-popup-head { padding: 14px 16px 11px; }
+    .tools-tabs { padding-inline: 10px; }
+    .tools-tab { padding-inline: 10px; }
+    .tools-scroll { padding: 10px; }
+    .tools-view > .panel, .tools-view > .planning-grid > .panel { padding: 15px 12px; }
+    .tools-view .participant-list { grid-template-columns: 1fr; }
+    .tools-view .panel-head .btn { width: auto; justify-self: start; }
+  }
+  @media (prefers-reduced-motion: reduce) { .tools-popup { animation: none; } }
+
+  .location-fab {
+    position: fixed;
+    z-index: 42;
+    right: max(18px, env(safe-area-inset-right));
+    bottom: calc(84px + env(safe-area-inset-bottom));
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    min-height: 52px;
+    padding: 0 17px;
+    border: 1px solid #a94d3b;
+    border-radius: 999px;
+    background: #bd5b43;
+    color: #fff;
+    box-shadow: 0 12px 34px rgb(68 43 33 / .22);
+    font: 600 .84rem var(--font);
+    cursor: pointer;
+  }
+  .location-fab:hover { background: #a94d3b; }
+  .location-fab[aria-expanded="true"] { background: #91402f; }
+  .location-popup {
+    position: fixed;
+    z-index: 43;
+    right: 20px;
+    bottom: calc(150px + env(safe-area-inset-bottom));
+    display: flex;
+    flex-direction: column;
+    width: min(760px, calc(100vw - 40px));
+    max-height: min(78vh, 780px);
+    max-height: min(78dvh, 780px);
+    overflow: hidden;
+    border: 1px solid #d7e2d9;
+    border-radius: 20px;
+    background: #fff;
+    box-shadow: 0 24px 70px rgb(21 46 35 / .27), 0 3px 10px rgb(21 46 35 / .08);
+    color: var(--ink);
+    animation: tools-pop-in .18s ease-out;
+  }
+  .location-popup[hidden] { display: none; }
+  .location-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 19px 12px; border-bottom: 1px solid #edf1ec; }
+  .location-head h2 { margin: 0; font-size: 1rem; letter-spacing: -.02em; }
+  .location-head p { margin: 2px 0 0; color: #7b8c81; font-size: .72rem; }
+  .location-body { min-height: 0; overflow: auto; overscroll-behavior: contain; padding: 13px 16px 16px; }
+  .location-sharing { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+  .location-sharing-status { flex: 1 1 190px; min-width: 0; color: #61746a; font-size: .76rem; }
+  .location-sharing-status[data-state="active"] { color: #23634a; font-weight: 600; }
+  .location-sharing-status[data-state="error"] { color: #a54437; }
+  .location-note { margin: 0 0 12px; padding: 9px 11px; border: 1px solid #f0dfbd; border-radius: 10px; background: #fff9eb; color: #765b2a; font-size: .72rem; line-height: 1.55; }
+  .location-note strong { font-weight: 700; }
+  .location-map { width: 100%; height: clamp(260px, 42vh, 450px); min-height: 250px; overflow: hidden; border: 1px solid #dce5dd; border-radius: 14px; background: #eef2ec; }
+  .location-map[hidden] { display: none; }
+  .location-map .leaflet-control-attribution { font-size: 9px; }
+  .live-people-heading { display: flex; justify-content: space-between; gap: 10px; margin: 12px 0 6px; color: #7e8d82; font-size: .66rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+  .live-people-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 6px; max-height: 140px; overflow: auto; margin: 0; padding: 0; list-style: none; }
+  .live-person-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-width: 0; padding: 8px 10px; border: 1px solid #e5ebe4; border-radius: 10px; background: #fbfcf9; color: #304c3c; text-align: left; font: 500 .74rem var(--font); }
+  button.live-person-row { cursor: pointer; }
+  button.live-person-row:hover { border-color: #a8c3ad; background: #f0f6ef; }
+  .live-person-row span:first-child { min-width: 0; overflow-wrap: anywhere; }
+  .live-person-row small { flex: none; color: #829087; font-size: .63rem; }
+  .live-person-row.is-live { border-color: #c8e1cd; background: #f2f8f1; }
+  .live-person-row.is-live small { color: #2e7954; font-weight: 700; }
+  .live-map-empty { margin: 0; padding: 12px; border: 1px dashed #dbe5db; border-radius: 10px; color: #7b8b80; font-size: .75rem; text-align: center; }
+  .live-map-empty[hidden] { display: none; }
+  .live-marker-popup { display: grid; gap: 5px; min-width: 175px; }
+  .live-marker-popup strong { color: #234a38; font: 600 .86rem var(--font); }
+  .live-marker-popup small { color: #748277; font: .7rem var(--font); }
+  .live-marker-popup a { color: #28634f; font: 600 .74rem var(--font); text-decoration: underline; text-underline-offset: 2px; }
+  .leaflet-tooltip.live-name-tooltip { border: 0; border-radius: 6px; background: #234a38; box-shadow: 0 2px 6px rgb(0 0 0 / .2); color: white; font: 600 11px var(--font); }
+  .leaflet-tooltip-top.live-name-tooltip::before { border-top-color: #234a38; }
+  @media (max-width: 680px) {
+    .location-fab { right: max(14px, env(safe-area-inset-right)); bottom: calc(80px + env(safe-area-inset-bottom)); min-height: 50px; padding-inline: 15px; }
+    .location-popup { right: max(10px, env(safe-area-inset-right)); bottom: calc(144px + env(safe-area-inset-bottom)); left: max(10px, env(safe-area-inset-left)); width: auto; max-height: min(78vh, 780px, calc(100vh - 164px - env(safe-area-inset-bottom))); max-height: min(78dvh, 780px, calc(100dvh - 164px - env(safe-area-inset-bottom))); border-radius: 17px; }
+    .location-head { padding: 13px 15px 10px; }
+    .location-body { padding: 10px; }
+    .location-map { height: min(39vh, 360px); min-height: 230px; }
+    .live-people-list { grid-template-columns: 1fr; max-height: 110px; }
+  }
+  @media (prefers-reduced-motion: reduce) { .location-popup { animation: none; } }
 </style>
 </head>
 <body>
@@ -748,41 +915,84 @@
     <div class="hero-caption wrap"><span>ĐÔNG BẮC VIỆT NAM</span><span>CAO NGUYÊN ĐÁ ĐỒNG VĂN</span></div>
   </header>
 
-  <nav class="days" aria-label="Chọn ngày"><div class="wrap"><div class="links" id="day-nav"></div><a class="btn" href="#tasks-section">Phân công</a><a class="btn" href="#expenses-section">Chi phí</a><a class="btn" href="#participants-section">Người tham gia</a><button type="button" class="btn" id="toggle-edit" aria-pressed="false">Chỉnh sửa</button></div></nav>
+  <nav class="days" aria-label="Chọn ngày"><div class="wrap"><div class="links" id="day-nav"></div><button type="button" class="btn" id="toggle-edit" aria-pressed="false">Chỉnh sửa</button></div></nav>
   <div class="wrap"><p class="status" id="status" role="status" hidden></p></div>
   <main class="wrap" id="itinerary"></main>
 
-  <div class="wrap planning-grid">
-    <section class="panel" id="tasks-section" aria-labelledby="tasks-title">
-      <div class="panel-head"><span class="panel-index">01</span><h2 id="tasks-title">Phân công</h2><button type="button" class="btn primary edit-only" id="add-task">Thêm công việc</button><p>Mọi người có thể xem. Cần mật khẩu để thêm, sửa hoặc xóa.</p></div>
-      <div class="filter-row"><label for="task-filter">Xem công việc của</label><select id="task-filter"><option value="*">Tất cả mọi người</option></select></div>
-      <ul class="task-list" id="task-list" aria-live="polite"></ul>
-    </section>
-
-    <section class="panel" id="expenses-section" aria-labelledby="expenses-title">
-      <div class="panel-head"><span class="panel-index">02</span><h2 id="expenses-title">Ngân sách</h2><button type="button" class="btn primary edit-only" id="add-expense">Thêm khoản chi</button><p>Các khoản dự tính và ảnh đính kèm của chuyến đi.</p></div>
-      <div class="budget-total budget-overview" aria-label="Tổng quan chi phí">
-        <div class="budget-metric"><span>TỔNG CHI PHÍ DỰ TÍNH</span><strong id="expense-summary" aria-live="polite">Đang tải…</strong><small id="expense-count"></small></div>
-        <div class="budget-metric budget-per-person"><span>CHI PHÍ BÌNH QUÂN / NGƯỜI</span><strong id="expense-per-person" aria-live="polite">Đang tải…</strong><small id="expense-split-label">Đang tính số người…</small></div>
+  <button type="button" class="tools-fab" id="tools-toggle" aria-expanded="false" aria-controls="tools-popup">
+    <span class="tools-fab-icon" aria-hidden="true">☰</span><span>Tiện ích</span>
+  </button>
+  <button type="button" class="location-fab" id="location-toggle" aria-expanded="false" aria-controls="location-popup">
+    <span aria-hidden="true">⌖</span><span>Vị trí trực tiếp</span>
+  </button>
+  <section class="location-popup" id="location-popup" role="dialog" aria-modal="false" aria-label="Vị trí trực tiếp" hidden>
+    <header class="location-head">
+      <div><h2>Vị trí trực tiếp của đoàn</h2><p>Bản đồ cập nhật mỗi 5 giây khi đang mở</p></div>
+      <button type="button" class="tools-close" id="location-close" aria-label="Đóng bản đồ vị trí">×</button>
+    </header>
+    <div class="location-body">
+      <div class="location-sharing">
+        <span class="location-sharing-status" id="location-sharing-status" data-state="idle" role="status">Đăng nhập với tên của bạn để xem hoặc chia sẻ vị trí.</span>
+        <button type="button" class="btn primary" id="location-login">Đăng nhập</button>
+        <button type="button" class="btn primary" id="location-start" hidden>Chia sẻ vị trí của tôi</button>
+        <button type="button" class="btn" id="location-stop" hidden>Dừng chia sẻ</button>
       </div>
-      <p class="expense-person-heading" id="expense-person-heading" hidden>TỔNG SỐ TIỀN TỪNG NGƯỜI ĐÃ CHI</p>
-      <ul class="expense-person-list" id="expense-person-list" aria-labelledby="expense-person-heading" hidden></ul>
-      <ul class="expense-list" id="expense-list" aria-live="polite"></ul>
-    </section>
-  </div>
-
-  <section class="wrap panel participants-panel" id="participants-section" aria-labelledby="participants-title">
-    <div class="panel-head"><span class="panel-index">03</span><h2 id="participants-title">Người tham gia</h2><span class="participants-count" id="participant-count">Đang tải…</span><p>Danh sách thành viên của chuyến đi Hà Giang.</p></div>
-    <ol class="participant-list" id="participant-list" aria-live="polite"><li class="empty">Đang tải danh sách…</li></ol>
+      <p class="location-note"><strong>Chia sẻ tự nguyện:</strong> mỗi người tự bật GPS và cấp quyền trên thiết bị của mình. Vị trí trực tiếp chỉ hiện cho thành viên đã đăng nhập bằng mật khẩu chuyến đi; marker tự ẩn sau 90 giây không cập nhật. Giữ trang mở khi chia sẻ.</p>
+      <div class="location-map" id="location-map" role="application" aria-label="Bản đồ các thành viên đang chia sẻ vị trí"></div>
+      <p class="live-map-empty" id="live-map-empty">Chưa có thành viên nào đang chia sẻ vị trí.</p>
+      <div class="live-people-heading"><span>Thành viên</span><span id="live-count">0 đang chia sẻ</span></div>
+      <ul class="live-people-list" id="live-people-list" aria-live="polite"><li class="live-map-empty">Đang tải danh sách…</li></ul>
+    </div>
   </section>
-
-  <section class="wrap panel" aria-labelledby="sessions-title">
-    <div class="panel-head"><div class="session-heading"><h2 id="sessions-title">Thiết bị đã đăng nhập</h2><span class="session-live" id="session-live"><i aria-hidden="true"></i><span id="session-live-label">Đang kết nối</span></span></div><p>Tên người và thiết bị được đồng bộ trực tiếp khi có đăng nhập hoặc thay đổi trạng thái.</p></div>
-    <ul class="session-list" id="session-list"><li class="empty">Đang tải danh sách…</li></ul>
+  <section class="tools-popup" id="tools-popup" role="dialog" aria-modal="false" aria-label="Tiện ích chuyến đi" hidden>
+    <header class="tools-popup-head">
+      <div><h2>Tiện ích chuyến đi</h2><p>Phân công, chi phí, liên hệ và thiết bị</p></div>
+      <button type="button" class="tools-close" id="tools-close" aria-label="Đóng tiện ích">×</button>
+    </header>
+    <nav class="tools-tabs" aria-label="Nhóm tiện ích" role="tablist">
+      <button type="button" class="tools-tab" id="tab-tasks" role="tab" aria-selected="true" aria-controls="view-tasks" data-tools-tab="tasks">Phân công</button>
+      <button type="button" class="tools-tab" id="tab-expenses" role="tab" aria-selected="false" aria-controls="view-expenses" data-tools-tab="expenses">Chi phí</button>
+      <button type="button" class="tools-tab" id="tab-people" role="tab" aria-selected="false" aria-controls="view-people" data-tools-tab="people">Thành viên</button>
+      <button type="button" class="tools-tab" id="tab-devices" role="tab" aria-selected="false" aria-controls="view-devices" data-tools-tab="devices">Thiết bị</button>
+    </nav>
+    <div class="tools-scroll" id="tools-scroll">
+      <section class="tools-view" id="view-tasks" role="tabpanel" aria-labelledby="tab-tasks" data-tools-view="tasks">
+        <div class="panel" id="tasks-section" aria-labelledby="tasks-title">
+          <div class="panel-head"><span class="panel-index">01</span><h2 id="tasks-title">Phân công</h2><button type="button" class="btn primary edit-only" id="add-task">Thêm công việc</button><p>Mọi người có thể xem. Cần mật khẩu để thêm, sửa hoặc xóa.</p></div>
+          <div class="filter-row"><label for="task-filter">Xem công việc của</label><select id="task-filter"><option value="*">Tất cả mọi người</option></select></div>
+          <ul class="task-list" id="task-list" aria-live="polite"></ul>
+        </div>
+      </section>
+      <section class="tools-view" id="view-expenses" role="tabpanel" aria-labelledby="tab-expenses" data-tools-view="expenses" hidden>
+        <div class="panel" id="expenses-section" aria-labelledby="expenses-title">
+          <div class="panel-head"><span class="panel-index">02</span><h2 id="expenses-title">Ngân sách</h2><button type="button" class="btn primary edit-only" id="add-expense">Thêm khoản chi</button><p>Các khoản dự tính và ảnh đính kèm của chuyến đi.</p></div>
+          <div class="budget-total budget-overview" aria-label="Tổng quan chi phí">
+            <div class="budget-metric"><span>TỔNG CHI PHÍ DỰ TÍNH</span><strong id="expense-summary" aria-live="polite">Đang tải…</strong><small id="expense-count"></small></div>
+            <div class="budget-metric budget-per-person"><span>CHI PHÍ BÌNH QUÂN / NGƯỜI</span><strong id="expense-per-person" aria-live="polite">Đang tải…</strong><small id="expense-split-label">Đang tính số người…</small></div>
+          </div>
+          <p class="expense-person-heading" id="expense-person-heading" hidden>TỔNG SỐ TIỀN TỪNG NGƯỜI ĐÃ CHI</p>
+          <ul class="expense-person-list" id="expense-person-list" aria-labelledby="expense-person-heading" hidden></ul>
+          <ul class="expense-list" id="expense-list" aria-live="polite"></ul>
+        </div>
+      </section>
+      <section class="tools-view" id="view-people" role="tabpanel" aria-labelledby="tab-people" data-tools-view="people" hidden>
+        <section class="panel participants-panel" id="participants-section" aria-labelledby="participants-title">
+          <div class="panel-head"><span class="panel-index">03</span><h2 id="participants-title">Người tham gia</h2><span class="participants-count" id="participant-count">Đang tải…</span><p>Số điện thoại và địa điểm để liên lạc, mở Zalo hoặc Google Maps.</p></div>
+          <p class="participant-schema-hint" id="participant-schema-hint" hidden>Chạy migration supabase-participant-contacts-migration.sql để bật lưu số điện thoại và vị trí thành viên.</p>
+          <ol class="participant-list" id="participant-list" aria-live="polite"><li class="empty">Đang tải danh sách…</li></ol>
+        </section>
+      </section>
+      <section class="tools-view" id="view-devices" role="tabpanel" aria-labelledby="tab-devices" data-tools-view="devices" hidden>
+        <section class="panel" id="sessions-section" aria-labelledby="sessions-title">
+          <div class="panel-head"><div class="session-heading"><h2 id="sessions-title">Thiết bị đã đăng nhập</h2><span class="session-live" id="session-live"><i aria-hidden="true"></i><span id="session-live-label">Đang kết nối</span></span></div><p>Tên người và thiết bị được đồng bộ trực tiếp khi có đăng nhập hoặc thay đổi trạng thái.</p></div>
+          <ul class="session-list" id="session-list"><li class="empty">Đang tải danh sách…</li></ul>
+        </section>
+      </section>
+    </div>
   </section>
 
   <footer>
-    <div class="wrap">Lịch trình, phân công, chi phí và nhật ký thiết bị lưu trên Supabase. Ảnh tải lên được lưu trong Storage.</div>
+    <div class="wrap">Lịch trình, phân công, chi phí, liên hệ thành viên và thiết bị được lưu trên Supabase. Ảnh tải lên được lưu trong Storage.</div>
   </footer>
 
   <dialog id="pw-dialog" aria-labelledby="pw-title">
@@ -854,6 +1064,17 @@
     </form>
   </dialog>
 
+  <dialog id="participant-dialog" aria-labelledby="participant-dialog-title">
+    <form class="dlg" id="participant-form">
+      <h2 id="participant-dialog-title">Cập nhật liên hệ</h2>
+      <p class="hint" id="participant-edit-name"></p>
+      <label class="field">Số điện thoại<input name="phone" type="tel" inputmode="tel" maxlength="32" autocomplete="tel" placeholder="Ví dụ: 0912 345 678"></label>
+      <label class="field">Địa chỉ hoặc tọa độ<input name="map_location" maxlength="300" autocomplete="street-address" placeholder="Tên địa điểm, địa chỉ hoặc 21.0307, 105.8523"></label>
+      <p class="hint">Nút Google Maps sẽ mở vị trí đã nhập. Hãy nhập thông tin người đó đã đồng ý chia sẻ; nội dung hiển thị cho mọi người mở trang.</p>
+      <div class="dlg-actions"><button type="button" class="btn" data-close>Hủy</button><button type="submit" class="btn primary">Lưu liên hệ</button></div>
+    </form>
+  </dialog>
+
   <dialog id="task-dialog" aria-labelledby="task-dialog-title">
     <form class="dlg" id="task-form">
       <h2 id="task-dialog-title">Thêm công việc</h2>
@@ -885,6 +1106,7 @@
     </form>
   </dialog>
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 (() => {
@@ -951,6 +1173,7 @@
   let expenses = [];
   let tripParticipants = [];
   let participantsLoadError = "";
+  let participantContactSchemaReady = false;
   let sessions = [];
   let editing = false;
   let editPassword = "";
@@ -962,6 +1185,18 @@
   let sessionRefreshPromise = null;
   let sessionRefreshDebounce = null;
   let sessionFallbackTimer = null;
+  let liveLocationMap = null;
+  let liveLocationMarkers = new Map();
+  let liveLocationPollingTimer = null;
+  let liveLocationWatchId = null;
+  let liveLocationHeartbeatTimer = null;
+  let liveLocationParticipantId = null;
+  let liveLocationLastSentAt = 0;
+  let liveLocationUpdateInFlight = false;
+  let liveLocationUpdatePromise = null;
+  let liveLocationMarkerSet = "";
+  let liveLocationRefreshPromise = null;
+  let liveLocationRequestToken = 0;
 
   function getCookie(name) {
     const value = document.cookie.split(";").map((part) => part.trim()).find((part) => part.startsWith(`${name}=`));
@@ -996,20 +1231,29 @@
   }
 
   async function loadItinerary() {
+    const participantResultPromise = request("trip_participants?select=id,name,sort_order,phone,map_location&order=sort_order,id")
+      .then((rows) => ({ rows, error: "", hasContactFields: true }))
+      .catch(async () => {
+        try {
+          const rows = await request("trip_participants?select=id,name,sort_order&order=sort_order,id");
+          return { rows, error: "", hasContactFields: false };
+        } catch (error) {
+          return { rows: [], error: error.message, hasContactFields: false };
+        }
+      });
     const [dayRows, stopRows, taskRows, expenseRows, participantResult] = await Promise.all([
       request("itinerary_days?select=*&order=sort_order"),
       request("itinerary_stops?select=*&order=sort_order,created_at"),
       request("assigned_tasks?select=*&order=created_at.desc"),
       request("estimated_expenses?select=*&order=created_at.desc"),
-      request("trip_participants?select=id,name,sort_order&order=sort_order,id")
-        .then((rows) => ({ rows, error: "" }))
-        .catch((error) => ({ rows: [], error: error.message }))
+      participantResultPromise
     ]);
     days = dayRows.map((day) => ({ ...day, stops: stopRows.filter((stop) => stop.day_id === day.id) }));
     tasks = taskRows;
     expenses = expenseRows;
     tripParticipants = participantResult.rows;
     participantsLoadError = participantResult.error;
+    participantContactSchemaReady = participantResult.hasContactFields;
   }
 
   function findStop(id) {
@@ -1175,14 +1419,34 @@
   function renderParticipants() {
     const list = $("participant-list");
     $("participant-count").textContent = `${tripParticipants.length} thành viên`;
+    $("participant-schema-hint").hidden = participantContactSchemaReady;
     syncParticipantSelect($("login-name"), readProfile().name);
     syncParticipantSelect($("expense-form").elements.paid_by, getCookie("ha_login_participant"));
     if (!tripParticipants.length) {
       list.innerHTML = `<li class="empty">${participantsLoadError ? `Không tải được danh sách: ${esc(participantsLoadError)}` : "Chưa có người tham gia."}</li>`;
       return;
     }
-    list.innerHTML = tripParticipants.map((participant) => `
-      <li class="participant-card"><span class="participant-avatar" aria-hidden="true">${esc(participantInitials(participant.name))}</span><span class="participant-name">${esc(participant.name)}</span></li>`).join("");
+    list.innerHTML = tripParticipants.map((participant) => {
+      const phone = String(participant.phone || "").trim();
+      const phoneDigits = phone.replace(/\D/g, "");
+      const location = String(participant.map_location || "").trim();
+      const zaloUrl = phoneDigits ? `https://zalo.me/${phoneDigits}` : "";
+      const mapsUrl = location ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}` : "";
+      const personTag = phoneDigits ? "a" : "span";
+      const personLink = phoneDigits ? `href="${zaloUrl}" target="_blank" rel="noopener" aria-label="Mở Zalo tìm ${esc(participant.name)}"` : "";
+      return `
+      <li class="participant-card">
+        <div class="participant-main">
+          <div class="participant-title"><${personTag} class="participant-person" ${personLink}><span class="participant-avatar" aria-hidden="true">${esc(participantInitials(participant.name))}</span><span class="participant-name">${esc(participant.name)}</span></${personTag}></div>
+          ${location ? `<span class="participant-location">📍 ${esc(location)}</span>` : ""}
+          <div class="participant-contact">
+            ${phone ? `<a class="btn" href="tel:${encodeURIComponent(phone)}" aria-label="Gọi ${esc(participant.name)}">Gọi · ${esc(phone)}</a><a class="btn" href="${zaloUrl}" target="_blank" rel="noopener" aria-label="Mở Zalo tìm ${esc(participant.name)}">Zalo</a>` : `<span class="participant-missing">Chưa có số điện thoại</span>`}
+            ${mapsUrl ? `<a class="btn" href="${esc(mapsUrl)}" target="_blank" rel="noopener" aria-label="Mở vị trí của ${esc(participant.name)} trên Google Maps">Google Maps</a>` : `<span class="participant-missing">Chưa có vị trí</span>`}
+          </div>
+        </div>
+        <div class="participant-actions edit-only"><button type="button" class="btn" data-participant-action="edit-contact" data-id="${participant.id}" aria-label="Sửa liên hệ ${esc(participant.name)}">Sửa</button></div>
+      </li>`;
+    }).join("");
   }
 
   function syncParticipantSelect(select, preferredName = "") {
@@ -1339,6 +1603,7 @@
 
   function setEditing(on) {
     const wasEditing = editing;
+    if (!on && wasEditing) stopLocationSharing({ showResult: false });
     editing = on;
     if (!on) editPassword = "";
     document.body.classList.toggle("editing", on);
@@ -1346,6 +1611,13 @@
     toggleButton.setAttribute("aria-pressed", String(on));
     renderTasks();
     renderExpenses();
+    syncLiveLocationControls();
+    if (on && !$("location-popup").hidden) startLiveLocationPolling();
+    if (!on) {
+      stopLiveLocationPolling();
+      clearLiveLocationMarkers();
+      refreshLiveLocations();
+    }
     if (heartbeatTimer) clearInterval(heartbeatTimer);
     heartbeatTimer = null;
     if (on) {
@@ -1402,6 +1674,7 @@
       await registerDevice(pendingLoginPassword, profile);
       setCookie("ha_login_participant", profile.name);
       localStorage.setItem("ha_login_profile", JSON.stringify(profile));
+      syncLiveLocationControls();
       pendingLoginPassword = "";
       profileDialog.close();
       showStatus("");
@@ -1416,7 +1689,375 @@
   document.querySelectorAll("[data-close]").forEach((button) =>
     button.addEventListener("click", () => button.closest("dialog").close()));
 
+  /* Non-schedule tools stay in a fixed drawer until the user closes it. */
+  const toolsPopup = $("tools-popup");
+  const toolsToggle = $("tools-toggle");
+  const toolsTabs = [...document.querySelectorAll("[data-tools-tab]")];
+  const toolsViews = [...document.querySelectorAll("[data-tools-view]")];
+  const locationPopup = $("location-popup");
+  const locationToggle = $("location-toggle");
+  const locationSharingStatus = $("location-sharing-status");
+  const locationStartButton = $("location-start");
+  const locationStopButton = $("location-stop");
+  const liveMapDefaultCenter = [22.8, 104.98];
+
+  function setLocationSharingStatus(message, state = "idle") {
+    locationSharingStatus.textContent = message;
+    locationSharingStatus.dataset.state = state;
+  }
+
+  function syncLiveLocationControls() {
+    const profileName = readProfile().name;
+    const participant = tripParticipants.find((item) => item.name === profileName);
+    const signedIn = editing && Boolean(participant);
+    $("location-login").hidden = signedIn;
+    locationStartButton.hidden = !signedIn || liveLocationParticipantId !== null;
+    locationStopButton.hidden = liveLocationParticipantId === null;
+    if (!editing) setLocationSharingStatus("Đăng nhập với tên của bạn để xem hoặc chia sẻ vị trí.");
+    else if (!participant) setLocationSharingStatus("Không tìm thấy thành viên đăng nhập trong danh sách.", "error");
+    else if (liveLocationParticipantId === null) setLocationSharingStatus(`Đã đăng nhập: ${participant.name}. Bật chia sẻ khi bạn sẵn sàng.`);
+  }
+
+  function ensureLiveLocationMap() {
+    if (!window.L) {
+      $("location-map").hidden = true;
+      $("live-map-empty").textContent = "Không tải được thư viện bản đồ. Kiểm tra kết nối rồi mở lại bảng vị trí.";
+      $("live-map-empty").hidden = false;
+      return false;
+    }
+    $("location-map").hidden = false;
+    if (!liveLocationMap) {
+      liveLocationMap = L.map("location-map", { zoomControl: true }).setView(liveMapDefaultCenter, 8);
+      L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a>'
+      }).addTo(liveLocationMap);
+    }
+    return true;
+  }
+
+  function googleDirectionsUrl(latitude, longitude) {
+    return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(`${latitude},${longitude}`)}`;
+  }
+
+  function clearLiveLocationMarkers() {
+    if (liveLocationMap) liveLocationMarkers.forEach(({ marker }) => liveLocationMap.removeLayer(marker));
+    liveLocationMarkers.clear();
+    liveLocationMarkerSet = "";
+  }
+
+  function renderLiveLocations(positions) {
+    const active = new Map();
+    positions.forEach((position) => {
+      const participant = tripParticipants.find((item) => item.id === position.participant_id);
+      if (participant) active.set(participant.id, { ...position, participant });
+    });
+    $("live-people-list").innerHTML = tripParticipants.length ? tripParticipants.map((participant) => {
+      const position = active.get(participant.id);
+      if (!position) return `<li class="live-person-row"><span>${esc(participant.name)}</span><small>Chưa chia sẻ</small></li>`;
+      const accuracy = Number(position.accuracy_m);
+      const accuracyLabel = Number.isFinite(accuracy) ? `±${Math.max(1, Math.round(accuracy))} m` : "Đang chia sẻ";
+      return `<li><button type="button" class="live-person-row is-live" data-live-person="${esc(participant.id)}"><span>${esc(participant.name)}</span><small>${accuracyLabel}</small></button></li>`;
+    }).join("") : `<li class="live-map-empty">${participantsLoadError ? esc(participantsLoadError) : "Chưa tải được danh sách thành viên."}</li>`;
+    $("live-count").textContent = `${active.size}/${tripParticipants.length} đang chia sẻ`;
+    $("live-map-empty").textContent = active.size ? "" : "Chưa có thành viên nào đang chia sẻ vị trí.";
+    $("live-map-empty").hidden = active.size > 0;
+
+    if (locationPopup.hidden || !ensureLiveLocationMap()) return;
+    for (const [id, entry] of liveLocationMarkers) {
+      if (!active.has(id)) {
+        liveLocationMap.removeLayer(entry.marker);
+        liveLocationMarkers.delete(id);
+      }
+    }
+    active.forEach((position, id) => {
+      const latitude = Number(position.latitude);
+      const longitude = Number(position.longitude);
+      if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return;
+      let entry = liveLocationMarkers.get(id);
+      if (!entry) {
+        const label = document.createElement("span");
+        label.textContent = position.participant.name;
+        const marker = L.circleMarker([latitude, longitude], {
+          radius: 9, color: "#fff", weight: 3, fillColor: "#bd5b43", fillOpacity: 1
+        }).addTo(liveLocationMap);
+        marker.bindTooltip(label, { permanent: true, direction: "top", className: "live-name-tooltip", offset: [0, -5] });
+        entry = { marker };
+        liveLocationMarkers.set(id, entry);
+      } else {
+        entry.marker.setLatLng([latitude, longitude]);
+      }
+      const popup = document.createElement("div");
+      popup.className = "live-marker-popup";
+      const name = document.createElement("strong");
+      name.textContent = position.participant.name;
+      const meta = document.createElement("small");
+      const seen = new Date(position.updated_at);
+      const seenText = Number.isNaN(seen.getTime()) ? "Vừa cập nhật" : `Cập nhật ${seen.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}`;
+      const accuracy = Number(position.accuracy_m);
+      meta.textContent = Number.isFinite(accuracy) ? `${seenText} · GPS ±${Math.max(1, Math.round(accuracy))} m` : seenText;
+      const directions = document.createElement("a");
+      directions.href = googleDirectionsUrl(latitude, longitude);
+      directions.target = "_blank";
+      directions.rel = "noopener";
+      directions.textContent = "Chỉ đường trên Google Maps";
+      popup.append(name, meta, directions);
+      entry.marker.bindPopup(popup);
+    });
+    const markerSet = [...active.keys()].sort().join(",");
+    if (markerSet !== liveLocationMarkerSet) {
+      liveLocationMarkerSet = markerSet;
+      if (active.size === 1) {
+        const only = [...active.values()][0];
+        liveLocationMap.setView([Number(only.latitude), Number(only.longitude)], 15);
+      } else if (active.size > 1) {
+        const bounds = L.latLngBounds([...active.values()].map((position) => [Number(position.latitude), Number(position.longitude)]));
+        liveLocationMap.fitBounds(bounds, { padding: [36, 36], maxZoom: 14 });
+      } else {
+        liveLocationMap.setView(liveMapDefaultCenter, 8);
+      }
+    }
+  }
+
+  async function refreshLiveLocations() {
+    if (!editing) {
+      renderLiveLocations([]);
+      return;
+    }
+    if (liveLocationRefreshPromise) return liveLocationRefreshPromise;
+    const token = liveLocationRequestToken;
+    liveLocationRefreshPromise = (async () => {
+      try {
+        const positions = await rpc("get_live_trip_participant_locations", {
+          p_password: editPassword,
+          p_device_id: deviceCookieId
+        });
+        if (token !== liveLocationRequestToken || !editing || locationPopup.hidden) return;
+        renderLiveLocations(positions || []);
+      } catch (error) {
+        if (token !== liveLocationRequestToken || locationPopup.hidden) return;
+        setLocationSharingStatus(`${error.message} · Chạy supabase-live-location-migration.sql nếu chưa cài chức năng này.`, "error");
+        if (/mật khẩu|đăng nhập thiết bị/i.test(error.message)) setEditing(false);
+      } finally {
+        liveLocationRefreshPromise = null;
+      }
+    })();
+    return liveLocationRefreshPromise;
+  }
+
+  function stopLiveLocationPolling() {
+    if (liveLocationPollingTimer) clearInterval(liveLocationPollingTimer);
+    liveLocationPollingTimer = null;
+    liveLocationRequestToken += 1;
+  }
+
+  function startLiveLocationPolling() {
+    stopLiveLocationPolling();
+    if (!editing || locationPopup.hidden) return;
+    refreshLiveLocations();
+    liveLocationPollingTimer = setInterval(() => {
+      if (editing && !locationPopup.hidden && document.visibilityState === "visible") refreshLiveLocations();
+    }, 5000);
+  }
+
+  async function sendLiveLocation(position) {
+    if (!editing || !liveLocationParticipantId || liveLocationUpdateInFlight) return;
+    const now = Date.now();
+    if (now - liveLocationLastSentAt < 5000) return;
+    liveLocationLastSentAt = now;
+    liveLocationUpdateInFlight = true;
+    try {
+      await rpc("share_trip_participant_location", {
+        p_password: editPassword,
+        p_device_id: deviceCookieId,
+        p_participant_id: liveLocationParticipantId,
+        p_latitude: position.coords.latitude,
+        p_longitude: position.coords.longitude,
+        p_accuracy_m: position.coords.accuracy
+      });
+      const participant = tripParticipants.find((item) => item.id === liveLocationParticipantId);
+      const accuracy = Math.max(1, Math.round(position.coords.accuracy || 0));
+      setLocationSharingStatus(`Đang chia sẻ vị trí của ${participant?.name || "bạn"} · GPS ±${accuracy} m.`, "active");
+      if (!locationPopup.hidden) refreshLiveLocations();
+    } catch (error) {
+      setLocationSharingStatus(`${error.message} · Chạy supabase-live-location-migration.sql nếu chưa cài chức năng này.`, "error");
+      if (/mật khẩu|đăng nhập bằng tên/i.test(error.message)) {
+        stopLocationSharing({ showResult: false, notifyServer: false });
+        setEditing(false);
+      }
+    } finally {
+      liveLocationUpdateInFlight = false;
+    }
+  }
+
+  function queueLiveLocationUpdate(position) {
+    if (liveLocationUpdateInFlight) return liveLocationUpdatePromise;
+    const pending = sendLiveLocation(position);
+    liveLocationUpdatePromise = pending;
+    pending.finally(() => {
+      if (liveLocationUpdatePromise === pending) liveLocationUpdatePromise = null;
+    });
+    return pending;
+  }
+
+  function stopLocationOnError(message) {
+    stopLocationSharing({ showResult: false }).finally(() => setLocationSharingStatus(message, "error"));
+  }
+
+  function startLocationSharing() {
+    if (!editing) {
+      setLocationSharingStatus("Đăng nhập bằng tên thành viên trước khi bật chia sẻ.");
+      $("location-login").click();
+      return;
+    }
+    const participant = tripParticipants.find((item) => item.name === readProfile().name);
+    if (!participant) {
+      setLocationSharingStatus("Không tìm thấy tên thành viên đã đăng nhập.", "error");
+      return;
+    }
+    if (!navigator.geolocation || !window.isSecureContext) {
+      setLocationSharingStatus("GPS cần trình duyệt hỗ trợ định vị và trang được mở bằng HTTPS.", "error");
+      return;
+    }
+    if (liveLocationWatchId !== null) return;
+    liveLocationParticipantId = participant.id;
+    liveLocationLastSentAt = 0;
+    setLocationSharingStatus("Đang chờ bạn cấp quyền GPS trên thiết bị…");
+    try {
+      const handleLocationError = (error) => {
+        const messages = {
+          1: "Bạn chưa cấp quyền GPS. Cho phép định vị rồi bấm chia sẻ lại.",
+          2: "Thiết bị chưa xác định được vị trí. Bật GPS hoặc thử lại ngoài trời.",
+          3: "Đã hết thời gian chờ GPS. Bấm chia sẻ lại để thử lần nữa."
+        };
+        stopLocationOnError(messages[error.code] || "Không lấy được vị trí GPS trên thiết bị.");
+      };
+      liveLocationWatchId = navigator.geolocation.watchPosition(queueLiveLocationUpdate, handleLocationError, {
+        enableHighAccuracy: true, maximumAge: 5000, timeout: 20000
+      });
+      liveLocationHeartbeatTimer = setInterval(() => {
+        if (liveLocationWatchId === null || !liveLocationParticipantId || liveLocationUpdateInFlight) return;
+        navigator.geolocation.getCurrentPosition(queueLiveLocationUpdate, () => {}, {
+          enableHighAccuracy: true, maximumAge: 10000, timeout: 15000
+        });
+      }, 20000);
+      syncLiveLocationControls();
+      setLocationSharingStatus("Đang lấy vị trí GPS. Giữ trang mở để tiếp tục chia sẻ…");
+    } catch (error) {
+      stopLocationOnError(error.message || "Không thể bật GPS trên thiết bị.");
+    }
+  }
+
+  async function stopLocationSharing({ showResult = true, notifyServer = true, keepalive = false } = {}) {
+    if (liveLocationWatchId !== null && navigator.geolocation) navigator.geolocation.clearWatch(liveLocationWatchId);
+    liveLocationWatchId = null;
+    if (liveLocationHeartbeatTimer) clearInterval(liveLocationHeartbeatTimer);
+    liveLocationHeartbeatTimer = null;
+    const participantId = liveLocationParticipantId;
+    liveLocationParticipantId = null;
+    liveLocationLastSentAt = 0;
+    syncLiveLocationControls();
+    if (!participantId) return;
+    const password = editPassword;
+    if (!notifyServer || !password) return;
+    if (liveLocationUpdatePromise) await liveLocationUpdatePromise;
+    const body = JSON.stringify({ p_password: password, p_device_id: deviceCookieId, p_participant_id: participantId });
+    if (keepalive) {
+      fetch(`${SUPABASE.url}/rest/v1/rpc/stop_trip_participant_location`, {
+        method: "POST",
+        headers: { apikey: SUPABASE.anonKey, Authorization: `Bearer ${SUPABASE.anonKey}`, "Content-Type": "application/json" },
+        body,
+        keepalive: true
+      }).catch(() => {});
+      return;
+    }
+    try {
+      await rpc("stop_trip_participant_location", {
+        p_password: password,
+        p_device_id: deviceCookieId,
+        p_participant_id: participantId
+      });
+      if (showResult) setLocationSharingStatus("Đã dừng chia sẻ và gỡ vị trí khỏi bản đồ.");
+      if (!locationPopup.hidden && editing) refreshLiveLocations();
+    } catch (error) {
+      if (showResult) setLocationSharingStatus(`${error.message} · Vị trí cũ sẽ tự ẩn sau 90 giây.`, "error");
+    }
+  }
+
+  function closeLocationPopup() {
+    locationPopup.hidden = true;
+    locationToggle.setAttribute("aria-expanded", "false");
+    stopLiveLocationPolling();
+    locationToggle.focus();
+  }
+
+  function closeTools() {
+    toolsPopup.hidden = true;
+    toolsToggle.setAttribute("aria-expanded", "false");
+    toolsToggle.focus();
+  }
+  function openLocationPopup() {
+    const opening = locationPopup.hidden;
+    toolsPopup.hidden = true;
+    toolsToggle.setAttribute("aria-expanded", "false");
+    locationPopup.hidden = !opening;
+    locationToggle.setAttribute("aria-expanded", String(opening));
+    if (!opening) {
+      stopLiveLocationPolling();
+      return;
+    }
+    syncLiveLocationControls();
+    if (editing) startLiveLocationPolling();
+    else renderLiveLocations([]);
+    if (ensureLiveLocationMap()) setTimeout(() => liveLocationMap?.invalidateSize(), 100);
+  }
+  locationToggle.addEventListener("click", openLocationPopup);
+  $("location-close").addEventListener("click", closeLocationPopup);
+  $("location-login").addEventListener("click", () => {
+    if (editing) return startLiveLocationPolling();
+    toggleButton.click();
+  });
+  locationStartButton.addEventListener("click", startLocationSharing);
+  locationStopButton.addEventListener("click", () => stopLocationSharing());
+  $("live-people-list").addEventListener("click", (event) => {
+    const button = event.target.closest("[data-live-person]");
+    if (!button || !liveLocationMap) return;
+    const entry = liveLocationMarkers.get(button.dataset.livePerson);
+    if (!entry) return;
+    liveLocationMap.setView(entry.marker.getLatLng(), Math.max(liveLocationMap.getZoom(), 15));
+    entry.marker.openPopup();
+  });
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible" && !locationPopup.hidden && editing) refreshLiveLocations();
+  });
+
+  toolsToggle.addEventListener("click", () => {
+    const opening = toolsPopup.hidden;
+    locationPopup.hidden = true;
+    locationToggle.setAttribute("aria-expanded", "false");
+    stopLiveLocationPolling();
+    toolsPopup.hidden = !opening;
+    toolsToggle.setAttribute("aria-expanded", String(opening));
+    if (opening) toolsTabs.find((tab) => tab.getAttribute("aria-selected") === "true")?.focus();
+  });
+  $("tools-close").addEventListener("click", closeTools);
+  toolsTabs.forEach((tab) => tab.addEventListener("click", () => {
+    const selected = tab.dataset.toolsTab;
+    toolsTabs.forEach((item) => item.setAttribute("aria-selected", String(item === tab)));
+    toolsViews.forEach((view) => { view.hidden = view.dataset.toolsView !== selected; });
+    $("tools-scroll").scrollTop = 0;
+  }));
+  document.addEventListener("keydown", (event) => {
+    const insideNativeDialog = event.target instanceof Element && event.target.closest("dialog[open]");
+    if (event.key !== "Escape" || insideNativeDialog) return;
+    if (!locationPopup.hidden) closeLocationPopup();
+    else if (!toolsPopup.hidden) closeTools();
+  });
+
   window.addEventListener("pagehide", () => {
+    if (liveLocationWatchId !== null || liveLocationParticipantId !== null) {
+      stopLocationSharing({ showResult: false, keepalive: true });
+    }
     if (!editing || !activeSessionId) return;
     fetch(`${SUPABASE.url}/rest/v1/rpc/close_device_session`, {
       method: "POST",
@@ -1752,6 +2393,45 @@
     if (button.dataset.expenseAction === "edit") return openExpenseEditor(expense.id);
     if (!confirm(`Xóa khoản chi “${expense.title}”?`)) return;
     mutate(() => rpc("delete_estimated_expense", { p_password: editPassword, p_id: expense.id }));
+  });
+
+  const participantDialog = $("participant-dialog");
+  const participantForm = $("participant-form");
+  let participantDraftId = null;
+  function openParticipantEditor(id) {
+    if (!editing) return;
+    if (!participantContactSchemaReady) {
+      showStatus("Chạy migration supabase-participant-contacts-migration.sql để lưu liên hệ thành viên.", true);
+      return;
+    }
+    const participant = tripParticipants.find((item) => item.id === id);
+    if (!participant) return;
+    participantDraftId = participant.id;
+    participantForm.reset();
+    participantForm.elements.phone.value = participant.phone || "";
+    participantForm.elements.map_location.value = participant.map_location || "";
+    $("participant-edit-name").textContent = participant.name;
+    participantDialog.showModal();
+    participantForm.elements.phone.focus();
+  }
+  $("participant-list").addEventListener("click", (event) => {
+    const button = event.target.closest('[data-participant-action="edit-contact"]');
+    if (!button || !editing) return;
+    openParticipantEditor(button.dataset.id);
+  });
+  participantForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!editing || !participantDraftId) return;
+    const submit = participantForm.querySelector("[type=submit]");
+    submit.disabled = true;
+    const saved = await mutate(() => rpc("save_trip_participant_contact", {
+      p_password: editPassword,
+      p_id: participantDraftId,
+      p_phone: participantForm.elements.phone.value.trim(),
+      p_map_location: participantForm.elements.map_location.value.trim()
+    }));
+    submit.disabled = false;
+    if (saved) participantDialog.close();
   });
 
   const taskDialog = $("task-dialog");
