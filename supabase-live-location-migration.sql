@@ -44,8 +44,8 @@ begin
     raise exception 'Đăng nhập thiết bị trước khi xem vị trí trực tiếp.' using errcode = '28000';
   end if;
 
-  delete from public.trip_participant_locations
-  where updated_at < now() - interval '90 seconds';
+  delete from public.trip_participant_locations as stale_location
+  where stale_location.updated_at < now() - interval '90 seconds';
 
   return query
   select location.participant_id, location.latitude, location.longitude,
