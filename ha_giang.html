@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Lịch trình Hà Giang 20–24/11</title>
+<title>Lịch trình Hà Giang</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.12.0/dist/maplibre-gl.css">
 <style>
   :root {
     --bg: #f3f6f5;
@@ -469,6 +469,8 @@
   .field input, .field textarea { padding: 10px 12px; }
   .field select { padding: 10px 12px; }
   .field input:focus, .field textarea:focus, .field select:focus, .filter-row select:focus { border-color: #7da88d; outline: 3px solid rgb(79 137 100 / .14); }
+  .check-field { display: flex; align-items: center; gap: 9px; }
+  .check-field input[type="checkbox"] { width: 17px; height: 17px; flex: none; margin: 0; padding: 0; accent-color: #28634f; }
   .hint { color: #7c8981; font-size: .75rem; }
   .remember-device { display: flex; align-items: flex-start; gap: 9px; color: #455e50; font-size: .8rem; font-weight: 600; }
   .remember-device input { width: 17px; height: 17px; flex: none; margin: 1px 0 0; accent-color: #28634f; }
@@ -858,7 +860,16 @@
   .location-note strong { font-weight: 700; }
   .location-map { width: 100%; height: clamp(260px, 42vh, 450px); min-height: 250px; overflow: hidden; border: 1px solid #dce5dd; border-radius: 14px; background: #eef2ec; }
   .location-map[hidden] { display: none; }
-  .location-map .leaflet-control-attribution { font-size: 9px; }
+  .location-map .maplibregl-ctrl-attrib { font-size: 9px; }
+  .live-map-marker { display: grid; justify-items: center; gap: 3px; padding: 0; border: 0; background: transparent; cursor: pointer; font-family: var(--font); }
+  .live-map-marker:focus-visible { outline: 3px solid rgb(40 99 79 / .4); outline-offset: 2px; border-radius: 7px; }
+  .live-map-marker-dot { width: 18px; height: 18px; border: 3px solid #fff; border-radius: 50%; background: var(--live-person-color, #2773b8); box-shadow: 0 1px 5px rgb(0 0 0 / .4); }
+  .live-map-marker-name { padding: 3px 6px; border-radius: 6px; background: var(--live-person-color, #234a38); box-shadow: 0 2px 6px rgb(0 0 0 / .2); color: #fff; font: 650 11px var(--font); white-space: nowrap; }
+  .live-map-marker.is-me .live-map-marker-name { background: #2773b8; }
+  .location-map-layers { display: flex; align-items: center; flex-wrap: wrap; gap: 7px 14px; margin: 8px 1px 0; color: #52695c; font-size: .7rem; }
+  .location-map-layers strong { color: #345544; font-size: .66rem; letter-spacing: .06em; text-transform: uppercase; }
+  .location-map-layer { display: inline-flex; align-items: center; gap: 5px; cursor: pointer; }
+  .location-map-layer input { accent-color: #28634f; }
   .live-people-heading { display: flex; justify-content: space-between; gap: 10px; margin: 12px 0 6px; color: #7e8d82; font-size: .66rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
   .live-people-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 6px; max-height: 180px; overflow: auto; overscroll-behavior: contain; margin: 0; padding: 0 2px 2px 0; list-style: none; }
   .live-person-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; min-width: 0; min-height: 48px; padding: 8px 10px; border: 1px solid #e5ebe4; border-left: 4px solid var(--live-person-color, #94a39a); border-radius: 10px; background: #fbfcf9; color: #304c3c; text-align: left; font: 500 .78rem var(--font); }
@@ -879,10 +890,6 @@
   .live-marker-popup strong { color: var(--live-person-color, #234a38); font: 700 .86rem var(--font); }
   .live-marker-popup small { color: #748277; font: .7rem var(--font); }
   .live-marker-popup a { color: #28634f; font: 600 .74rem var(--font); text-decoration: underline; text-underline-offset: 2px; }
-  .leaflet-tooltip.live-name-tooltip { border: 0; border-radius: 6px; background: var(--live-person-color, #234a38); box-shadow: 0 2px 6px rgb(0 0 0 / .2); color: white; font: 650 11px var(--font); }
-  .leaflet-tooltip-top.live-name-tooltip::before { border-top-color: var(--live-person-color, #234a38); }
-  .leaflet-tooltip.live-me-tooltip { border: 0; border-radius: 6px; background: #2773b8; box-shadow: 0 2px 6px rgb(0 0 0 / .2); color: white; font: 600 11px var(--font); }
-  .leaflet-tooltip-top.live-me-tooltip::before { border-top-color: #2773b8; }
   @media (max-width: 680px) {
     .location-fab { right: max(14px, env(safe-area-inset-right)); bottom: calc(80px + env(safe-area-inset-bottom)); min-height: 50px; padding-inline: 15px; }
     .location-popup { top: max(8px, env(safe-area-inset-top)); right: max(8px, env(safe-area-inset-right)); bottom: max(8px, env(safe-area-inset-bottom)); left: max(8px, env(safe-area-inset-left)); width: auto; max-height: none; border-radius: 17px; }
@@ -909,19 +916,13 @@
         <p class="hero-summary">Một hành trình qua những cung đèo, bản làng và cao nguyên đá phía Bắc.</p>
         <a class="hero-cta" href="#itinerary">Khám phá hành trình <span aria-hidden="true">↓</span></a>
         <div class="hero-facts">
-          <div class="hero-fact"><span>KHỞI HÀNH</span><strong>20:00</strong><small>Phú Thái, Hải Dương</small></div>
-          <div class="hero-fact"><span>THỜI GIAN</span><strong id="trip-range">20/11 đến 24/11</strong><small>5 ngày · 4 đêm</small></div>
+          <div class="hero-fact"><span>LỊCH TRÌNH</span><strong id="trip-duration">Đang tải…</strong><small id="trip-stop-count">Đang tải các điểm dừng</small></div>
+          <div class="hero-fact"><span>THỜI GIAN</span><strong id="trip-range">Đang tải…</strong><small>Ngày đi được đồng bộ từ lịch trình</small></div>
         </div>
       </div>
       <aside class="route-panel" aria-label="Tuyến đường chính">
-        <div class="route-heading"><span>LỘ TRÌNH</span><span>01 — 05</span></div>
-        <ol class="route">
-          <li>Hà Giang</li>
-          <li>Quản Bạ</li>
-          <li>Đồng Văn</li>
-          <li>Lũng Cú</li>
-          <li>Mèo Vạc</li>
-        </ol>
+        <div class="route-heading"><span>LỘ TRÌNH</span><span id="route-count">—</span></div>
+        <ol class="route" id="route-stops"><li>Đang tải lịch trình…</li></ol>
         <p>Cung đường qua những điểm dừng đặc sắc của cao nguyên đá.</p>
       </aside>
     </div>
@@ -954,6 +955,13 @@
       </div>
       <p class="location-note"><strong>Chia sẻ tự nguyện:</strong> mỗi người tự bật GPS và cấp quyền trên thiết bị của mình. Vị trí trực tiếp chỉ hiện cho thành viên đã đăng nhập bằng mật khẩu chuyến đi; marker tự ẩn sau 90 giây không cập nhật. Giữ trang mở khi chia sẻ.</p>
       <div class="location-map" id="location-map" role="application" aria-label="Bản đồ các thành viên đang chia sẻ vị trí"></div>
+      <div class="location-map-layers" aria-label="Lớp bản đồ">
+        <strong>Lớp địa lý</strong>
+        <label class="location-map-layer"><input type="checkbox" id="live-layer-accuracy"> Vùng sai số GPS</label>
+        <label class="location-map-layer"><input type="checkbox" id="live-layer-route" checked> Tuyến đường</label>
+      </div>
+      <p class="location-distance-note" id="live-route-status" aria-live="polite" hidden></p>
+      <p class="location-distance-note">Chạm marker khác để vẽ tuyến trong bản đồ; dịch vụ OSRM nhận tọa độ hai đầu tuyến. Popup marker có liên kết chỉ đường Google Maps.</p>
       <p class="live-map-empty" id="live-map-empty">Chưa có thành viên nào đang chia sẻ vị trí.</p>
       <div class="live-people-heading"><span>Thành viên · cự ly ước tính</span><span id="live-count">0 đang chia sẻ</span></div>
       <ul class="live-people-list" id="live-people-list" aria-live="polite"><li class="live-map-empty">Đang tải danh sách…</li></ul>
@@ -974,7 +982,7 @@
     <div class="tools-scroll" id="tools-scroll">
       <section class="tools-view" id="view-tasks" role="tabpanel" aria-labelledby="tab-tasks" data-tools-view="tasks">
         <div class="panel" id="tasks-section" aria-labelledby="tasks-title">
-          <div class="panel-head"><span class="panel-index">01</span><h2 id="tasks-title">Phân công</h2><button type="button" class="btn primary edit-only" id="add-task">Thêm công việc</button><p>Mọi người có thể xem. Cần mật khẩu để thêm, sửa hoặc xóa.</p></div>
+          <div class="panel-head"><span class="panel-index">01</span><h2 id="tasks-title">Phân công</h2><button type="button" class="btn primary edit-only" id="add-task">Thêm công việc</button><p>Mọi người có thể xem. Cần đăng nhập thiết bị để thêm, sửa hoặc xóa.</p></div>
           <div class="filter-row"><label for="task-filter">Xem công việc của</label><select id="task-filter"><option value="*">Tất cả mọi người</option></select></div>
           <ul class="task-list" id="task-list" aria-live="polite"></ul>
         </div>
@@ -984,17 +992,33 @@
           <div class="panel-head"><span class="panel-index">02</span><h2 id="expenses-title">Ngân sách</h2><button type="button" class="btn primary edit-only" id="add-expense">Thêm khoản chi</button><p>Các khoản dự tính và ảnh đính kèm của chuyến đi.</p></div>
           <div class="budget-total budget-overview" aria-label="Tổng quan chi phí">
             <div class="budget-metric"><span>TỔNG CHI PHÍ DỰ TÍNH</span><strong id="expense-summary" aria-live="polite">Đang tải…</strong><small id="expense-count"></small></div>
-            <div class="budget-metric budget-per-person"><span>CHI PHÍ BÌNH QUÂN / NGƯỜI</span><strong id="expense-per-person" aria-live="polite">Đang tải…</strong><small id="expense-split-label">Đang tính số người…</small></div>
+            <div class="budget-metric budget-per-person"><span>PHẦN CHI PHÍ CHUNG / NGƯỜI</span><strong id="expense-per-person" aria-live="polite">Đang tải…</strong><small id="expense-split-label">Đang tính số người…</small></div>
           </div>
-          <p class="expense-person-heading" id="expense-person-heading" hidden>TỔNG SỐ TIỀN TỪNG NGƯỜI ĐÃ CHI</p>
+          <div class="budget-total budget-overview" aria-label="Ngân sách và quỹ chung">
+            <div class="budget-metric"><span>NGÂN SÁCH DỰ KIẾN</span><strong id="trip-budget-summary">Đăng nhập để xem</strong><small id="trip-budget-remaining"></small></div>
+            <div class="budget-metric budget-per-person"><span>SỐ DƯ QUỸ CHUNG</span><strong id="trip-fund-balance">Đăng nhập để xem</strong><small id="trip-fund-summary"></small></div>
+          </div>
+          <p class="hint" id="private-finance-hint">Đăng nhập để xem và cập nhật ngân sách, các khoản góp quỹ.</p>
+          <form class="row edit-only" id="trip-budget-form" hidden>
+            <label class="field" style="flex:1">Ngân sách dự kiến (VNĐ)<input name="planned_budget" type="number" min="0" step="1000"></label>
+            <button type="submit" class="btn">Lưu ngân sách</button>
+          </form>
+          <div class="panel-head"><h3>Đóng góp quỹ chung</h3><button type="button" class="btn edit-only" id="add-fund-contribution" hidden>Thêm đóng góp</button></div>
+          <ul class="expense-list" id="fund-contribution-list" aria-live="polite"><li class="empty">Đăng nhập để xem quỹ chung.</li></ul>
+          <div class="panel-head"><h3>Quyết toán</h3></div>
+          <p class="hint" id="finance-settlement-summary">Đăng nhập để xem các khoản cần chuyển.</p>
+          <ul class="expense-list" id="finance-settlement-list" aria-live="polite"></ul>
+          <div class="panel-head"><h3>Chi phí theo danh mục</h3></div>
+          <ul class="expense-person-list" id="expense-category-list" aria-live="polite"></ul>
+          <p class="expense-person-heading" id="expense-person-heading" hidden>TỔNG SỐ TIỀN TỪNG NGƯỜI ĐÃ CHI VÀ QUỸ CHUNG</p>
           <ul class="expense-person-list" id="expense-person-list" aria-labelledby="expense-person-heading" hidden></ul>
           <ul class="expense-list" id="expense-list" aria-live="polite"></ul>
         </div>
       </section>
       <section class="tools-view" id="view-people" role="tabpanel" aria-labelledby="tab-people" data-tools-view="people" hidden>
         <section class="panel participants-panel" id="participants-section" aria-labelledby="participants-title">
-          <div class="panel-head"><span class="panel-index">03</span><h2 id="participants-title">Người tham gia</h2><span class="participants-count" id="participant-count">Đang tải…</span><p>Số điện thoại và địa điểm để liên lạc, mở Zalo hoặc Google Maps.</p></div>
-          <p class="participant-schema-hint" id="participant-schema-hint" hidden>Chạy migration supabase-participant-contacts-migration.sql để bật lưu số điện thoại và vị trí thành viên.</p>
+          <div class="panel-head"><span class="panel-index">03</span><h2 id="participants-title">Người tham gia</h2><span class="participants-count" id="participant-count">Đang tải…</span><p>Đăng nhập thiết bị để xem số điện thoại và địa điểm liên hệ.</p></div>
+          <p class="participant-schema-hint" id="participant-schema-hint" hidden>Đăng nhập để xem thông tin liên hệ thành viên.</p>
           <ol class="participant-list" id="participant-list" aria-live="polite"><li class="empty">Đang tải danh sách…</li></ol>
         </section>
       </section>
@@ -1030,8 +1054,7 @@
       <h2 id="profile-title">Chọn thành viên đăng nhập</h2>
       <label class="field">Bạn là ai trong chuyến đi?<select id="login-name" required><option value="">Chọn tên trong danh sách</option></select></label>
       <label class="field">Tên máy hoặc thiết bị<input id="device-name" maxlength="100" required autocomplete="off"></label>
-      <label class="remember-device"><input id="remember-device" type="checkbox" checked>Ghi nhớ đăng nhập trên thiết bị này</label>
-      <p class="hint">Mật khẩu được lưu trong bộ nhớ trình duyệt trên thiết bị này để tự khôi phục khi mở web lại. Muốn xóa đăng nhập đã lưu, chọn Tiện ích → Thiết bị → Đăng xuất thiết bị này.</p>
+      <p class="hint">Thiết bị được xác thực bằng phiên đăng nhập riêng. Bạn có thể đăng xuất trong Tiện ích → Thiết bị.</p>
       <div class="dlg-actions"><button type="button" class="btn" data-close>Hủy</button><button type="submit" class="btn primary">Lưu và đăng nhập</button></div>
     </form>
   </dialog>
@@ -1068,10 +1091,8 @@
         <div class="upload-row">
           <input type="file" id="image-file" accept="image/jpeg,image/png,image/webp">
           <button type="button" class="btn" id="upload-image">Tải ảnh lên Storage</button>
-          <button type="button" class="btn" id="load-storage-images">Quản lý ảnh Storage</button>
         </div>
-        <p class="hint">JPG, PNG hoặc WebP tối đa 5 MB. Có thể chọn ảnh đã lưu, thay ảnh hoặc xóa file không còn được lịch trình sử dụng.</p>
-        <div class="storage-gallery" id="storage-gallery" hidden></div>
+        <p class="hint">JPG, PNG hoặc WebP tối đa 5 MB. Ảnh được tải lên cùng bucket với ứng dụng mobile.</p>
         <div class="thumbs" id="thumbs"></div>
       </div>
       <div class="dlg-actions">
@@ -1113,7 +1134,10 @@
       <h2 id="expense-dialog-title">Thêm khoản chi</h2>
       <label class="field">Tên khoản chi<input name="title" maxlength="180" required placeholder="Ví dụ: Vé tham quan"></label>
       <label class="field">Số tiền dự tính (VNĐ)<input name="amount" type="number" min="0" step="1000" required></label>
-      <label class="field">Người đã chi<select name="paid_by" required><option value="">Chọn thành viên đã thanh toán</option></select></label>
+      <label class="field">Danh mục<select name="category" required><option>Lưu trú</option><option>Di chuyển</option><option>Ăn uống</option><option>Vé tham quan</option><option>Nhiên liệu</option><option>Mua sắm</option><option>Khác</option></select></label>
+      <label class="field">Người đã chi<select name="paid_by"><option value="">Chọn thành viên đã thanh toán</option></select></label>
+      <label class="field check-field"><input name="is_shared" type="checkbox" checked> Khoản chi chung</label>
+      <label class="field check-field"><input name="paid_from_fund" type="checkbox"> Khoản chi từ quỹ chung</label>
       <label class="field">Ghi chú<textarea name="note" maxlength="3000"></textarea></label>
       <label class="field">Ảnh đính kèm (JPG, PNG hoặc WebP, tối đa 5 MB)<input id="expense-file" type="file" accept="image/jpeg,image/png,image/webp"></label>
       <div class="upload-row"><button type="button" class="btn" id="upload-expense-image">Tải ảnh lên Storage</button><button type="button" class="btn" id="clear-expense-image">Bỏ ảnh</button></div>
@@ -1123,7 +1147,17 @@
     </form>
   </dialog>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <dialog id="fund-contribution-dialog" aria-labelledby="fund-contribution-title">
+    <form class="dlg" id="fund-contribution-form">
+      <h2 id="fund-contribution-title">Thêm đóng góp quỹ</h2>
+      <label class="field">Thành viên<select name="participant_id" required><option value="">Chọn thành viên</option></select></label>
+      <label class="field">Số tiền (VNĐ)<input name="amount" type="number" min="1" step="1000" required></label>
+      <label class="field">Ghi chú<textarea name="note" maxlength="1000"></textarea></label>
+      <div class="dlg-actions"><button type="button" class="btn" data-close>Hủy</button><button type="submit" class="btn primary">Lưu đóng góp</button></div>
+    </form>
+  </dialog>
+
+<script src="https://unpkg.com/maplibre-gl@5.12.0/dist/maplibre-gl.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 (() => {
@@ -1189,11 +1223,12 @@
   let tasks = [];
   let expenses = [];
   let tripParticipants = [];
-  let participantsLoadError = "";
   let participantContactSchemaReady = false;
+  let tripBudget = 0;
+  let tripFundContributions = [];
+  let privateFinanceError = "";
   let sessions = [];
   let editing = false;
-  let editPassword = "";
   let activeSessionId = null;
   let taskFilterValue = "*";
   let heartbeatTimer = null;
@@ -1203,8 +1238,16 @@
   let sessionRefreshDebounce = null;
   let sessionFallbackTimer = null;
   let liveLocationMap = null;
+  let liveLocationMapLoaded = false;
   let liveLocationMarkers = new Map();
   let liveLocationMeMarker = null;
+  let liveLocationMeAccuracy = null;
+  let liveLocationRouteGeoJSON = { type: "FeatureCollection", features: [] };
+  let liveLocationAccuracyGeoJSON = { type: "FeatureCollection", features: [] };
+  let liveLocationRouteRequestId = 0;
+  let liveLocationRouteDestinationId = "";
+  let liveLocationRouteAbortController = null;
+  let liveLocationRouteLastRequestedAt = 0;
   let liveLocationMeCoordinates = null;
   let liveLocationPositions = [];
   let liveLocationPollingTimer = null;
@@ -1232,8 +1275,10 @@
   const deviceCookieId = getCookie("ha_device_id") || crypto.randomUUID();
   if (!getCookie("ha_device_id")) setCookie("ha_device_id", deviceCookieId);
   taskFilterValue = getCookie("ha_task_filter") || "*";
-  const REMEMBERED_PASSWORD_KEY = "ha_remembered_edit_password";
-  const REMEMBER_DEVICE_PREFERENCE_KEY = "ha_remember_device";
+  try {
+    localStorage.removeItem("ha_remembered_edit_password");
+    localStorage.removeItem("ha_remember_device");
+  } catch {}
 
   function readProfile() {
     let profile = null;
@@ -1245,11 +1290,10 @@
     };
   }
 
-  function syncRememberedDeviceControl() {
+  function syncDeviceSignoutControl() {
     const button = $("forget-device");
     if (!button) return;
-    try { button.hidden = !localStorage.getItem(REMEMBERED_PASSWORD_KEY); }
-    catch { button.hidden = true; }
+    button.hidden = !editing;
   }
 
   function defaultDeviceName() {
@@ -1260,29 +1304,51 @@
   }
 
   async function loadItinerary() {
-    const participantResultPromise = request("trip_participants?select=id,name,sort_order,phone,map_location&order=sort_order,id")
-      .then((rows) => ({ rows, error: "", hasContactFields: true }))
-      .catch(async () => {
-        try {
-          const rows = await request("trip_participants?select=id,name,sort_order&order=sort_order,id");
-          return { rows, error: "", hasContactFields: false };
-        } catch (error) {
-          return { rows: [], error: error.message, hasContactFields: false };
-        }
-      });
     const [dayRows, stopRows, taskRows, expenseRows, participantResult] = await Promise.all([
-      request("itinerary_days?select=*&order=sort_order"),
+      request("itinerary_days?select=*&order=trip_date.asc,sort_order.asc"),
       request("itinerary_stops?select=*&order=sort_order,created_at"),
       request("assigned_tasks?select=*&order=created_at.desc"),
       request("estimated_expenses?select=*&order=created_at.desc"),
-      participantResultPromise
+      rpc("list_trip_participants", {})
     ]);
     days = dayRows.map((day) => ({ ...day, stops: stopRows.filter((stop) => stop.day_id === day.id) }));
     tasks = taskRows;
     expenses = expenseRows;
-    tripParticipants = participantResult.rows;
-    participantsLoadError = participantResult.error;
-    participantContactSchemaReady = participantResult.hasContactFields;
+    let profiles = [];
+    if (editing) {
+      profiles = await rpc("get_trip_participant_profiles_for_device", {
+        p_device_cookie: deviceCookieId
+      });
+    }
+    const profilesById = new Map(profiles.map((profile) => [profile.id, profile]));
+    tripParticipants = participantResult.map((participant) => ({
+      ...participant,
+      ...(profilesById.get(participant.id) || {})
+    }));
+    participantContactSchemaReady = editing;
+    await loadPrivateTripFinance();
+  }
+
+  async function loadPrivateTripFinance() {
+    if (!editing) {
+      tripBudget = 0;
+      tripFundContributions = [];
+      privateFinanceError = "";
+      return;
+    }
+    try {
+      const [budgetRows, contributionRows] = await Promise.all([
+        rpc("get_trip_budget_for_device", { p_device_cookie: deviceCookieId }),
+        rpc("get_trip_fund_contributions_for_device", { p_device_cookie: deviceCookieId })
+      ]);
+      tripBudget = Number(budgetRows?.[0]?.planned_budget) || 0;
+      tripFundContributions = contributionRows || [];
+      privateFinanceError = "";
+    } catch (error) {
+      tripBudget = 0;
+      tripFundContributions = [];
+      privateFinanceError = error.message;
+    }
   }
 
   function findStop(id) {
@@ -1368,18 +1434,41 @@
   }
 
   function render() {
-    if (days.length) {
-      const first = parseDate(days[0].trip_date).short;
-      const last = parseDate(days[days.length - 1].trip_date).short;
-      $("trip-range").textContent = `${first} đến ${last}`;
-      document.title = `Lịch trình Hà Giang ${first.slice(0, 2)}–${last}`;
+    if (!days.length) {
+      document.title = "Lịch trình Hà Giang";
+      $("trip-range").textContent = "Chưa có dữ liệu";
+      $("trip-duration").textContent = "Chưa có lịch trình";
+      $("trip-stop-count").textContent = "Chưa có điểm dừng";
+      $("route-count").textContent = "—";
+      $("route-stops").innerHTML = "<li>Chưa có chặng đường</li>";
+      $("day-nav").innerHTML = "";
+      $("itinerary").innerHTML = `
+        <div class="itinerary-intro">
+          <div><span class="section-kicker">HÀNH TRÌNH CỦA BẠN</span><h2>Chưa có lịch trình</h2><p>Thêm ngày và điểm dừng trong cơ sở dữ liệu để hiển thị hành trình.</p></div>
+          <span class="itinerary-count"><strong>0</strong> ngày <i>·</i> 0 điểm dừng</span>
+        </div>`;
+      renderTasks();
+      renderExpenses();
+      renderParticipants();
+      return;
     }
+
+    const first = parseDate(days[0].trip_date).short;
+    const last = parseDate(days[days.length - 1].trip_date).short;
+    const stopCount = days.reduce((total, day) => total + day.stops.length, 0);
+    $("trip-range").textContent = `${first} đến ${last}`;
+    $("trip-duration").textContent = `${days.length} ngày · ${Math.max(0, days.length - 1)} đêm`;
+    $("trip-stop-count").textContent = `${stopCount} điểm dừng theo lịch trình`;
+    $("route-count").textContent = `01 — ${String(days.length).padStart(2, "0")}`;
+    $("route-stops").innerHTML = days
+      .map((day) => `<li>${esc(day.title || day.label)}</li>`)
+      .join("");
+    document.title = `Lịch trình Hà Giang ${first}–${last}`;
 
     $("day-nav").innerHTML = days
       .map((day) => `<a href="#d-${day.id}">${esc(day.label)} (${parseDate(day.trip_date).short})</a>`)
       .join("");
 
-    const stopCount = days.reduce((total, day) => total + day.stops.length, 0);
     $("itinerary").innerHTML = `
       <div class="itinerary-intro">
         <div><span class="section-kicker">HÀNH TRÌNH CỦA BẠN</span><h2>Từng chặng đường</h2><p>Lịch trình theo ngày, dễ xem và dễ cùng nhau cập nhật.</p></div>
@@ -1452,7 +1541,7 @@
     syncParticipantSelect($("login-name"), readProfile().name);
     syncParticipantSelect($("expense-form").elements.paid_by, getCookie("ha_login_participant"));
     if (!tripParticipants.length) {
-      list.innerHTML = `<li class="empty">${participantsLoadError ? `Không tải được danh sách: ${esc(participantsLoadError)}` : "Chưa có người tham gia."}</li>`;
+      list.innerHTML = `<li class="empty">Chưa có người tham gia.</li>`;
       return;
     }
     list.innerHTML = tripParticipants.map((participant) => {
@@ -1479,30 +1568,136 @@
   }
 
   function syncParticipantSelect(select, preferredName = "") {
-    const currentName = select.value;
-    const names = tripParticipants.map((participant) => participant.name);
-    const selectedName = [currentName, preferredName].find((name) => names.includes(name)) || "";
+    const currentValue = select.value;
+    const selected = tripParticipants.find((participant) =>
+      [currentValue, preferredName].includes(participant.id)
+      || [currentValue, preferredName].includes(participant.name)
+    );
     const placeholder = select.id === "login-name" ? "Chọn tên trong danh sách" : "Chọn thành viên đã thanh toán";
     select.innerHTML = `<option value="">${placeholder}</option>`
-      + tripParticipants.map((participant) => `<option value="${esc(participant.name)}">${esc(participant.name)}</option>`).join("");
-    select.value = selectedName;
+      + tripParticipants.map((participant) => `<option value="${esc(participant.id)}">${esc(participant.name)}</option>`).join("");
+    select.value = selected?.id || "";
   }
 
   function renderExpenseSummary() {
-    const total = expenses.reduce((sum, expense) => sum + (Number(expense.amount) || 0), 0);
+    const amountOf = (expense) => Math.round(Number(expense.amount) || 0);
+    const total = expenses.reduce((sum, expense) => sum + amountOf(expense), 0);
+    const sharedTotal = expenses.reduce((sum, expense) =>
+      sum + (expense.is_shared === false ? 0 : amountOf(expense)), 0);
+    const fundSpent = expenses.reduce((sum, expense) =>
+      sum + (expense.paid_from_fund ? amountOf(expense) : 0), 0);
     const people = getExpenseParticipants();
-    const share = people.length ? total / people.length : 0;
+    const share = people.length ? sharedTotal / people.length : 0;
+    const contributions = tripFundContributions.reduce((sum, item) => sum + Math.round(Number(item.amount) || 0), 0);
     $("expense-summary").textContent = formatVnd(total);
-    $("expense-count").textContent = `${expenses.length} khoản chi`;
+    $("expense-count").textContent = `${expenses.length} khoản chi · ${formatVnd(sharedTotal)} chi phí chung`;
     $("expense-per-person").textContent = people.length ? formatVnd(share) : "—";
     $("expense-split-label").textContent = people.length
-      ? `Chia đều cho ${people.length} thành viên`
+      ? `Chia đều ${formatVnd(sharedTotal)} cho ${people.length} thành viên`
       : "Đăng nhập hoặc phân công thành viên để tính";
+    $("trip-budget-summary").textContent = editing
+      ? tripBudget > 0 ? formatVnd(tripBudget) : "Chưa đặt ngân sách"
+      : "Đăng nhập để xem";
+    $("trip-budget-remaining").textContent = editing && tripBudget > 0
+      ? `${total <= tripBudget ? "Còn lại" : "Vượt ngân sách"} ${formatVnd(Math.abs(tripBudget - total))} · đã chi ${formatVnd(total)}`
+      : "";
+    $("trip-fund-balance").textContent = editing ? formatVnd(contributions - fundSpent) : "Đăng nhập để xem";
+    $("trip-fund-summary").textContent = editing
+      ? `${formatVnd(contributions)} đã góp · ${formatVnd(fundSpent)} đã chi từ quỹ`
+      : "";
+    const financeHint = $("private-finance-hint");
+    financeHint.hidden = editing && !privateFinanceError;
+    financeHint.textContent = privateFinanceError
+      ? `Không tải được dữ liệu quỹ: ${privateFinanceError}`
+      : "Đăng nhập để xem và cập nhật ngân sách, các khoản góp quỹ.";
+    const budgetForm = $("trip-budget-form");
+    budgetForm.hidden = !editing;
+    if (document.activeElement !== budgetForm.elements.planned_budget) {
+      budgetForm.elements.planned_budget.value = tripBudget || "";
+    }
+    $("add-fund-contribution").hidden = !editing;
+    $("fund-contribution-list").innerHTML = !editing
+      ? `<li class="empty">Đăng nhập để xem quỹ chung.</li>`
+      : tripFundContributions.length ? tripFundContributions.map((item) => `
+        <li class="task-card"><div><h3>${esc(item.participant_name)}</h3><div class="expense-amount">${formatVnd(item.amount)}</div>${item.note ? `<p>${esc(item.note)}</p>` : ""}</div>
+          <div class="expense-actions"><button type="button" class="btn sm" data-contribution-action="edit" data-id="${item.id}">Sửa</button><button type="button" class="btn sm danger" data-contribution-action="delete" data-id="${item.id}">Xóa</button></div>
+        </li>`).join("")
+      : `<li class="empty">Chưa có khoản góp quỹ nào.</li>`;
+    const categoryTotals = new Map();
+    expenses.forEach((expense) => {
+      const category = expense.category || "Khác";
+      categoryTotals.set(category, (categoryTotals.get(category) || 0) + amountOf(expense));
+    });
+    const categories = [...categoryTotals.entries()].sort((left, right) => right[1] - left[1]);
+    $("expense-category-list").innerHTML = categories.length
+      ? categories.map(([category, amount]) => `<li><span>${esc(category)}</span><strong>${formatVnd(amount)}</strong></li>`).join("")
+      : `<li class="empty">Chưa có khoản chi nào.</li>`;
+
+    if (!editing || privateFinanceError) {
+      $("finance-settlement-summary").textContent = editing
+        ? `Không tính được quyết toán: ${privateFinanceError}`
+        : "Đăng nhập để xem các khoản cần chuyển.";
+      $("finance-settlement-list").innerHTML = "";
+    } else {
+      const contributionById = new Map(tripParticipants.map((participant) => [participant.id, 0]));
+      tripFundContributions.forEach((item) => {
+        contributionById.set(item.participant_id, (contributionById.get(item.participant_id) || 0) + Math.round(Number(item.amount) || 0));
+      });
+      const participantByName = new Map(tripParticipants.map((participant) => [participant.name, participant.id]));
+      const sharedPaidById = new Map(tripParticipants.map((participant) => [participant.id, 0]));
+      expenses.forEach((expense) => {
+        if (expense.paid_from_fund || expense.is_shared === false) return;
+        const participantId = expense.paid_by_participant_id || participantByName.get(expense.paid_by);
+        if (participantId && sharedPaidById.has(participantId)) {
+          sharedPaidById.set(participantId, sharedPaidById.get(participantId) + amountOf(expense));
+        }
+      });
+      const balances = new Map();
+      const participantCount = tripParticipants.length;
+      let remainder = participantCount ? sharedTotal % participantCount : 0;
+      tripParticipants.forEach((participant) => {
+        const fairShare = participantCount ? Math.floor(sharedTotal / participantCount) + (remainder-- > 0 ? 1 : 0) : 0;
+        balances.set(participant.id,
+          (contributionById.get(participant.id) || 0)
+          + (sharedPaidById.get(participant.id) || 0)
+          - fairShare);
+      });
+      const balanceSum = [...balances.values()].reduce((sum, amount) => sum + amount, 0);
+      const debtors = tripParticipants
+        .filter((participant) => balances.get(participant.id) < 0)
+        .map((participant) => ({ name: participant.name, amount: -balances.get(participant.id) }));
+      const creditors = tripParticipants
+        .filter((participant) => balances.get(participant.id) > 0)
+        .map((participant) => ({ name: participant.name, amount: balances.get(participant.id) }));
+      if (balanceSum > 0) debtors.push({ name: "Quỹ chuyến đi", amount: balanceSum });
+      if (balanceSum < 0) creditors.push({ name: "Quỹ chuyến đi", amount: -balanceSum });
+      const transfers = [];
+      let debtorIndex = 0;
+      let creditorIndex = 0;
+      while (debtorIndex < debtors.length && creditorIndex < creditors.length) {
+        const debtor = debtors[debtorIndex];
+        const creditor = creditors[creditorIndex];
+        const amount = Math.min(debtor.amount, creditor.amount);
+        if (amount > 0) transfers.push({ from: debtor.name, to: creditor.name, amount });
+        debtor.amount -= amount;
+        creditor.amount -= amount;
+        if (debtor.amount === 0) debtorIndex++;
+        if (creditor.amount === 0) creditorIndex++;
+      }
+      $("finance-settlement-summary").textContent = contributions - fundSpent < 0
+        ? "Quỹ đang âm. Hãy ghi nhận tiền góp quỹ hoặc kiểm tra khoản chi từ quỹ."
+        : "Chia đều khoản chi chung; khoản chi cá nhân được tính riêng.";
+      $("finance-settlement-list").innerHTML = transfers.length
+        ? transfers.map((transfer) => `<li class="task-card"><span><strong>${esc(transfer.from)} → ${esc(transfer.to)}</strong></span><strong>${formatVnd(transfer.amount)}</strong></li>`).join("")
+        : `<li class="empty">Hiện chưa cần chuyển tiền giữa các thành viên.</li>`;
+    }
     const paidTotals = new Map(people.map((name) => [name.toLocaleLowerCase("vi"), { name, amount: 0 }]));
     let unassignedTotal = 0;
     expenses.forEach((expense) => {
-      const amount = Number(expense.amount) || 0;
-      const name = String(expense.paid_by || "").trim().normalize("NFC");
+      if (expense.paid_from_fund) return;
+      const amount = amountOf(expense);
+      const participant = tripParticipants.find((item) => item.id === expense.paid_by_participant_id);
+      const name = String(participant?.name || expense.paid_by || "").trim().normalize("NFC");
       if (!name) {
         unassignedTotal += amount;
         return;
@@ -1515,7 +1710,7 @@
     const personList = $("expense-person-list");
     personList.hidden = !people.length;
     $("expense-person-heading").hidden = !people.length;
-    personList.innerHTML = [...paidTotals.values(), ...(unassignedTotal ? [{ name: "Chưa ghi nhận người chi", amount: unassignedTotal }] : [])]
+    personList.innerHTML = [...paidTotals.values(), ...(unassignedTotal ? [{ name: "Chưa ghi nhận người chi", amount: unassignedTotal }] : []), ...(fundSpent ? [{ name: "Quỹ chung", amount: fundSpent }] : [])]
       .map((person) => `<li><span>${esc(person.name)}</span><strong>${formatVnd(person.amount)}</strong></li>`).join("");
   }
 
@@ -1524,7 +1719,7 @@
     $("expense-list").innerHTML = expenses.length ? expenses.map((expense) => `
       <li class="expense-card">
         ${expense.image_url ? `<img src="${esc(expense.image_url)}" alt="Ảnh ${esc(expense.title)}" loading="lazy">` : `<div class="empty">Chưa có ảnh</div>`}
-        <div><h3>${esc(expense.title)}</h3><div class="expense-amount">${formatVnd(expense.amount)}</div><p class="expense-paid-by${expense.paid_by ? "" : " is-unassigned"}">${expense.paid_by ? `Người chi: <strong>${esc(expense.paid_by)}</strong>` : "Chưa ghi nhận người chi"}</p>${expense.note ? `<p>${esc(expense.note)}</p>` : ""}</div>
+        <div><h3>${esc(expense.title)}</h3><div class="expense-amount">${formatVnd(expense.amount)}</div><p>${esc(expense.category || "Khác")} · ${expense.is_shared === false ? "Chi phí cá nhân" : "Chi phí chung"}</p><p class="expense-paid-by${expense.paid_by || expense.paid_from_fund ? "" : " is-unassigned"}">${expense.paid_from_fund ? "Chi từ quỹ chung" : expense.paid_by ? `Người chi: <strong>${esc(expense.paid_by)}</strong>` : "Chưa ghi nhận người chi"}</p>${expense.note ? `<p>${esc(expense.note)}</p>` : ""}</div>
         ${editing ? `<div class="expense-actions"><button type="button" class="btn sm" data-expense-action="edit" data-id="${expense.id}">Sửa</button><button type="button" class="btn sm danger" data-expense-action="delete" data-id="${expense.id}">Xóa</button></div>` : ""}
       </li>`).join("") : `<li class="empty">Chưa có khoản chi dự tính nào.</li>`;
   }
@@ -1538,9 +1733,9 @@
     }
     list.innerHTML = sessions.map((session) => {
       const seen = new Date(session.last_seen_at || session.logged_in_at);
-      const online = !session.logged_out_at && Date.now() - seen.getTime() < 180000;
+      const online = Date.now() - seen.getTime() < 180000;
       const lastSeen = Number.isNaN(seen.getTime()) ? "" : seen.toLocaleString("vi-VN");
-      return `<li class="session-row"><span><strong>${esc(session.user_name)}</strong> · ${esc(session.device_name)}${session.device_cookie === deviceCookieId ? " · Thiết bị này" : ""}<br><small>Đăng nhập: ${esc(new Date(session.logged_in_at).toLocaleString("vi-VN"))} · Hoạt động cuối: ${esc(lastSeen)}</small></span><span class="session-state${online ? "" : " offline"}">${online ? "Đang hoạt động" : "Đã đăng xuất / không hoạt động"}</span></li>`;
+      return `<li class="session-row"><span><strong>${esc(session.user_name)}</strong> · ${esc(session.device_name)}${session.id === activeSessionId ? " · Thiết bị này" : ""}<br><small>Đăng nhập: ${esc(new Date(session.logged_in_at).toLocaleString("vi-VN"))} · Hoạt động cuối: ${esc(lastSeen)}</small></span><span class="session-state${online ? "" : " offline"}">${online ? "Đang hoạt động" : "Không hoạt động gần đây"}</span></li>`;
     }).join("");
   }
 
@@ -1561,7 +1756,7 @@
     if (sessionRefreshPromise) return sessionRefreshPromise;
     sessionRefreshPromise = (async () => {
       try {
-        sessions = await request("device_sessions?select=device_cookie,user_name,device_name,logged_in_at,last_seen_at,logged_out_at&order=logged_in_at.desc&limit=50");
+        sessions = await request("device_sessions_public?select=id,user_name,device_name,logged_in_at,last_seen_at&order=last_seen_at.desc&limit=50");
         renderSessions();
       } catch (error) {
         $("session-list").innerHTML = `<li class="empty">${esc(error.message)} · Chạy migration Supabase để bật nhật ký thiết bị.</li>`;
@@ -1582,6 +1777,9 @@
     document.addEventListener("visibilitychange", () => {
       if (document.visibilityState === "visible") refreshSessions();
     });
+    dashboardRefreshTimer = setInterval(() => {
+      if (document.visibilityState === "visible") refresh().catch((error) => showStatus(error.message, true));
+    }, 30000);
     if (!realtimeClient) return;
 
     try {
@@ -1590,7 +1788,7 @@
         .on("postgres_changes", {
           event: "*",
           schema: "public",
-          table: "device_sessions"
+          table: "device_sessions_public"
         }, scheduleSessionRefresh)
         .subscribe((status) => {
           const connected = status === "SUBSCRIBED";
@@ -1600,6 +1798,23 @@
     } catch {
       setSessionRealtimeStatus(false);
     }
+
+    const dashboardChannel = realtimeClient.channel("trip-dashboard-live");
+    ["itinerary_days", "itinerary_stops", "assigned_tasks", "estimated_expenses", "trip_participants_public"].forEach((table) => {
+      dashboardChannel.on("postgres_changes", {
+        event: "*",
+        schema: "public",
+        table
+      }, scheduleDashboardRefresh);
+    });
+    dashboardChannel.subscribe();
+  }
+
+  let dashboardRefreshTimer = null;
+  let dashboardRefreshDebounce = null;
+  function scheduleDashboardRefresh() {
+    clearTimeout(dashboardRefreshDebounce);
+    dashboardRefreshDebounce = setTimeout(() => refresh().catch((error) => showStatus(error.message, true)), 180);
   }
 
   async function refresh() {
@@ -1615,82 +1830,58 @@
   const pwError = $("pw-error");
   const profileDialog = $("profile-dialog");
   let pendingLoginPassword = "";
-  const rememberDeviceCheckbox = $("remember-device");
-  try {
-    rememberDeviceCheckbox.checked = localStorage.getItem(REMEMBER_DEVICE_PREFERENCE_KEY) !== "false";
-  } catch {
-    rememberDeviceCheckbox.checked = true;
-  }
 
-  async function registerDevice(password, profile) {
-    activeSessionId = crypto.randomUUID();
-    try {
-      await rpc("register_device_session", {
+  async function registerDevice(password, participant, profile) {
+    const result = await rpc("open_device_session", {
         p_password: password,
-        p_session_id: activeSessionId,
-        p_device_id: deviceCookieId,
-        p_user_name: profile.name,
+        p_participant_id: participant.id,
+        p_device_cookie: deviceCookieId,
         p_device_name: profile.device
       });
-    } catch (error) {
-      activeSessionId = null;
-      throw error;
-    }
-    editPassword = password;
+    const session = Array.isArray(result) ? result[0] : result;
+    if (!session?.id) throw new Error("Supabase không trả về phiên đăng nhập.");
+    activeSessionId = session.id;
     setEditing(true);
-    await refreshSessions();
+    setCookie("ha_login_participant", participant.name);
+    try { localStorage.setItem("ha_login_profile", JSON.stringify(profile)); } catch {}
+    await refresh();
   }
 
-  async function restoreRememberedDevice() {
-    let password = "";
-    try { password = localStorage.getItem(REMEMBERED_PASSWORD_KEY) || ""; }
-    catch { return; }
-    if (!password) return;
-
-    const profile = readProfile();
-    if (!profile.name || !tripParticipants.some((participant) => participant.name === profile.name)) {
-      try { localStorage.removeItem(REMEMBERED_PASSWORD_KEY); } catch {}
-      syncRememberedDeviceControl();
-      showStatus("Tên thành viên đã lưu không còn trong danh sách. Đăng nhập lại để chọn tên mới.", true);
-      return;
-    }
-
-    try {
-      const valid = await rpc("check_edit_password", { p_password: password });
-      if (!valid) {
-        try { localStorage.removeItem(REMEMBERED_PASSWORD_KEY); } catch {}
-        syncRememberedDeviceControl();
-        showStatus("Mật khẩu đã lưu không còn hợp lệ. Đăng nhập lại để tiếp tục.", true);
-        return;
-      }
-      const rememberedProfile = { ...profile, device: profile.device || defaultDeviceName() };
-      await registerDevice(password, rememberedProfile);
-      setCookie("ha_login_participant", rememberedProfile.name);
-      localStorage.setItem("ha_login_profile", JSON.stringify(rememberedProfile));
-      syncRememberedDeviceControl();
-      showStatus("");
-    } catch (error) {
-      showStatus(`Không khôi phục được đăng nhập đã lưu: ${error.message}`, true);
-    }
+  async function restoreDeviceSession() {
+    const result = await rpc("get_device_session", { p_device_cookie: deviceCookieId });
+    const session = Array.isArray(result) ? result[0] : result;
+    if (!session?.id) return false;
+    activeSessionId = session.id;
+    const profile = { name: session.user_name, device: session.device_name || defaultDeviceName() };
+    setCookie("ha_login_participant", profile.name);
+    try { localStorage.setItem("ha_login_profile", JSON.stringify(profile)); } catch {}
+    setEditing(true);
+    await refresh();
+    return true;
   }
 
-  function setEditing(on, { clearRemembered = false } = {}) {
+  function setEditing(on) {
     const wasEditing = editing;
     if (!on && wasEditing) stopLocationSharing({ showResult: false });
     editing = on;
     if (!on) {
-      editPassword = "";
-      if (clearRemembered) {
-        try { localStorage.removeItem(REMEMBERED_PASSWORD_KEY); } catch {}
-      }
+      participantContactSchemaReady = false;
+      tripParticipants = tripParticipants.map(({ id, name, sort_order }) => ({ id, name, sort_order }));
+      tripBudget = 0;
+      tripFundContributions = [];
+      privateFinanceError = "";
+      const contactDialog = $("participant-dialog");
+      if (contactDialog.open) contactDialog.close();
+      $("participant-form").reset();
     }
     document.body.classList.toggle("editing", on);
     toggleButton.textContent = on ? "Xong" : "Chỉnh sửa";
     toggleButton.setAttribute("aria-pressed", String(on));
     renderTasks();
     renderExpenses();
+    renderParticipants();
     syncLiveLocationControls();
-    syncRememberedDeviceControl();
+    syncDeviceSignoutControl();
     if (on && !$("location-popup").hidden) startLiveLocationPolling();
     if (!on) {
       stopLiveLocationPolling();
@@ -1702,77 +1893,51 @@
     if (on) {
       heartbeatTimer = setInterval(() => {
         if (document.visibilityState === "visible" && activeSessionId) {
-          rpc("touch_device_session", { p_session_id: activeSessionId }).then(refreshSessions).catch(() => {});
+          rpc("touch_device_session", { p_device_cookie: deviceCookieId }).then(refreshSessions).catch(() => {});
         }
       }, 60000);
     } else if (wasEditing) {
-      const closingSessionId = activeSessionId;
       activeSessionId = null;
-      if (closingSessionId) rpc("close_device_session", { p_session_id: closingSessionId }).then(refreshSessions).catch(() => {});
+      rpc("close_device_session", { p_device_cookie: deviceCookieId }).then(refreshSessions).catch(() => {});
     }
+    syncDeviceSignoutControl();
   }
 
   toggleButton.addEventListener("click", () => {
     if (editing) return setEditing(false);
     pwInput.value = "";
     pwError.hidden = true;
-    try {
-      rememberDeviceCheckbox.checked = localStorage.getItem(REMEMBER_DEVICE_PREFERENCE_KEY) !== "false";
-    } catch {
-      rememberDeviceCheckbox.checked = true;
-    }
     pwDialog.showModal();
     pwInput.focus();
   });
 
   $("pw-form").addEventListener("submit", async (event) => {
     event.preventDefault();
-    try {
-      const ok = await rpc("check_edit_password", { p_password: pwInput.value });
-      if (!ok) throw new Error("Mật khẩu không đúng.");
-      pendingLoginPassword = pwInput.value;
-      pwDialog.close();
-      const profile = readProfile();
-      syncParticipantSelect($("login-name"), profile.name);
-      $("login-name").value = profile?.name || "";
-      $("device-name").value = profile?.device || defaultDeviceName();
-      profileDialog.showModal();
-      $("login-name").focus();
-    } catch (error) {
-      pwError.textContent = error.message;
-      pwError.hidden = false;
-      pwInput.select();
-    }
+    pendingLoginPassword = pwInput.value;
+    pwDialog.close();
+    const profile = readProfile();
+    syncParticipantSelect($("login-name"), profile.name);
+    $("device-name").value = profile.device || defaultDeviceName();
+    profileDialog.showModal();
+    $("login-name").focus();
   });
 
   $("profile-form").addEventListener("submit", async (event) => {
     event.preventDefault();
-    const profile = { name: $("login-name").value.trim(), device: $("device-name").value.trim() };
-    if (!tripParticipants.some((participant) => participant.name === profile.name)) {
+    const participant = tripParticipants.find((item) => item.id === $("login-name").value);
+    if (!participant) {
       showStatus("Chọn tên của bạn trong danh sách người tham gia.", true);
       return;
     }
+    const profile = { name: participant.name, device: $("device-name").value.trim() };
     const submit = event.currentTarget.querySelector("[type=submit]");
     submit.disabled = true;
-    let rememberStorageFailed = false;
     try {
-      await registerDevice(pendingLoginPassword, profile);
-      setCookie("ha_login_participant", profile.name);
-      try {
-        localStorage.setItem("ha_login_profile", JSON.stringify(profile));
-        localStorage.setItem(REMEMBER_DEVICE_PREFERENCE_KEY, String(rememberDeviceCheckbox.checked));
-        if (rememberDeviceCheckbox.checked) localStorage.setItem(REMEMBERED_PASSWORD_KEY, pendingLoginPassword);
-        else localStorage.removeItem(REMEMBERED_PASSWORD_KEY);
-        syncRememberedDeviceControl();
-      } catch {
-        rememberStorageFailed = true;
-      }
+      await registerDevice(pendingLoginPassword, participant, profile);
       syncLiveLocationControls();
       pendingLoginPassword = "";
       profileDialog.close();
-      showStatus(rememberStorageFailed
-        ? "Đã đăng nhập nhưng trình duyệt không cho phép lưu đăng nhập trên thiết bị này."
-        : "", rememberStorageFailed);
+      showStatus("");
     } catch (error) {
       showStatus(error.message, true);
     } finally {
@@ -1796,7 +1961,7 @@
   const locationMeGoogleLink = $("location-me-google");
   const locationStartButton = $("location-start");
   const locationStopButton = $("location-stop");
-  const liveMapDefaultCenter = [22.8, 104.98];
+  const liveMapDefaultCenter = [104.98, 22.8];
   const liveParticipantColors = [
     "#b42318", "#175cd3", "#067647", "#7a2e9e", "#b54708", "#0e7490",
     "#9e165f", "#3f6212", "#4338ca", "#a12c2f", "#075985", "#854d0e",
@@ -1805,6 +1970,8 @@
 
   function liveParticipantColor(participantId) {
     const index = tripParticipants.findIndex((participant) => participant.id === participantId);
+    const storedColor = index < 0 ? "" : tripParticipants[index].map_color || "";
+    if (/^#[0-9A-Fa-f]{6}$/.test(storedColor)) return storedColor;
     return liveParticipantColors[(index < 0 ? 0 : index) % liveParticipantColors.length];
   }
 
@@ -1847,14 +2014,13 @@
     return nearest ? `Gần ${nearest.name} · ${formatEstimatedDistance(nearest.meters)}` : "";
   }
 
-  syncRememberedDeviceControl();
+  syncDeviceSignoutControl();
   $("forget-device").addEventListener("click", () => {
-    if (editing) setEditing(false, { clearRemembered: true });
-    else {
-      try { localStorage.removeItem(REMEMBERED_PASSWORD_KEY); } catch {}
-      syncRememberedDeviceControl();
-    }
-    showStatus("Đã đăng xuất và xóa mật khẩu đã lưu trên thiết bị này.");
+    if (editing) setEditing(false);
+    setCookie("ha_device_id", "", 0);
+    setCookie("ha_login_participant", "", 0);
+    try { localStorage.removeItem("ha_login_profile"); } catch {}
+    showStatus("Đã đăng xuất thiết bị này.");
   });
 
   function setLocationSharingStatus(message, state = "idle") {
@@ -1875,29 +2041,264 @@
   }
 
   function ensureLiveLocationMap() {
-    if (!window.L) {
+    if (!window.maplibregl) {
       $("location-map").hidden = true;
-      $("live-map-empty").textContent = "Không tải được thư viện bản đồ. Kiểm tra kết nối rồi mở lại bảng vị trí.";
+      $("live-map-empty").textContent = "Không tải được thư viện MapLibre GL. Kiểm tra kết nối rồi mở lại bảng vị trí.";
       $("live-map-empty").hidden = false;
       return false;
     }
     $("location-map").hidden = false;
     if (!liveLocationMap) {
-      liveLocationMap = L.map("location-map", { zoomControl: true }).setView(liveMapDefaultCenter, 8);
-      L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        maxZoom: 19,
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a>'
-      }).addTo(liveLocationMap);
+      try {
+        liveLocationMap = new maplibregl.Map({
+          container: "location-map",
+          style: "https://tiles.openfreemap.org/styles/liberty",
+          center: liveMapDefaultCenter,
+          zoom: 8,
+          attributionControl: true
+        });
+        liveLocationMap.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
+        liveLocationMap.once("load", () => {
+          initializeLiveLocationGeoLayers();
+          liveLocationMapLoaded = true;
+          syncLiveLocationGeoLayers();
+          const routeGeometry = liveLocationRouteGeoJSON.features[0]?.geometry;
+          if (routeGeometry) fitLiveLocationRoute(routeGeometry);
+          renderLiveLocations(liveLocationPositions);
+        });
+        liveLocationMap.on("error", (event) => console.error("Lỗi tải bản đồ MapLibre GL:", event.error));
+      } catch (error) {
+        console.error("Không thể khởi tạo bản đồ MapLibre GL:", error);
+        $("location-map").hidden = true;
+        $("live-map-empty").textContent = "Thiết bị không hỗ trợ WebGL hoặc không thể khởi tạo bản đồ.";
+        $("live-map-empty").hidden = false;
+        return false;
+      }
     }
     return true;
   }
 
+  function initializeLiveLocationGeoLayers() {
+    liveLocationMap.addSource("live-location-accuracy", {
+      type: "geojson", data: liveLocationAccuracyGeoJSON
+    });
+    liveLocationMap.addLayer({
+      id: "live-location-accuracy-fill",
+      type: "fill",
+      source: "live-location-accuracy",
+      paint: { "fill-color": ["get", "color"], "fill-opacity": 0.14 }
+    });
+    liveLocationMap.addLayer({
+      id: "live-location-accuracy-outline",
+      type: "line",
+      source: "live-location-accuracy",
+      paint: { "line-color": ["get", "color"], "line-width": 1.5, "line-opacity": 0.75 }
+    });
+    liveLocationMap.addSource("live-location-route", {
+      type: "geojson", data: liveLocationRouteGeoJSON
+    });
+    liveLocationMap.addLayer({
+      id: "live-location-route-casing",
+      type: "line",
+      source: "live-location-route",
+      layout: { "line-cap": "round", "line-join": "round" },
+      paint: { "line-color": "#ffffff", "line-width": ["interpolate", ["linear"], ["zoom"], 8, 7, 16, 12], "line-opacity": 0.9 }
+    });
+    liveLocationMap.addLayer({
+      id: "live-location-route-line",
+      type: "line",
+      source: "live-location-route",
+      layout: { "line-cap": "round", "line-join": "round" },
+      paint: { "line-color": "#2878d0", "line-width": ["interpolate", ["linear"], ["zoom"], 8, 4, 16, 8], "line-opacity": 0.98 }
+    });
+    setLiveLocationGeoLayerVisibility();
+  }
+
+  function setLiveLocationGeoLayerVisibility() {
+    if (!liveLocationMapLoaded) return;
+    const showAccuracy = $("live-layer-accuracy").checked;
+    const showRoute = $("live-layer-route").checked;
+    ["live-location-accuracy-fill", "live-location-accuracy-outline"].forEach((layer) => {
+      liveLocationMap.setLayoutProperty(layer, "visibility", showAccuracy ? "visible" : "none");
+    });
+    ["live-location-route-casing", "live-location-route-line"].forEach((layer) => {
+      liveLocationMap.setLayoutProperty(layer, "visibility", showRoute ? "visible" : "none");
+    });
+  }
+
+  function syncLiveLocationGeoLayers() {
+    if (!liveLocationMapLoaded) return;
+    liveLocationMap.getSource("live-location-accuracy")?.setData(liveLocationAccuracyGeoJSON);
+    liveLocationMap.getSource("live-location-route")?.setData(liveLocationRouteGeoJSON);
+    setLiveLocationGeoLayerVisibility();
+  }
+
+  function setLiveLocationRoute(feature) {
+    liveLocationRouteGeoJSON = {
+      type: "FeatureCollection",
+      features: feature ? [feature] : []
+    };
+    syncLiveLocationGeoLayers();
+  }
+
+  function setLiveRouteStatus(message) {
+    const status = $("live-route-status");
+    status.textContent = message;
+    status.hidden = !message;
+  }
+
+  function liveViewerParticipantId() {
+    if (!editing) return "";
+    const profileName = readProfile().name;
+    return tripParticipants.find((participant) => participant.name === profileName)?.id || "";
+  }
+
   function googleDirectionsUrl(latitude, longitude) {
-    return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(`${latitude},${longitude}`)}`;
+    const viewerId = liveViewerParticipantId();
+    const sharedPosition = liveLocationPositions.find((position) => position.participant_id === viewerId);
+    const origin = liveLocationMeCoordinates || (sharedPosition ? {
+      latitude: Number(sharedPosition.latitude), longitude: Number(sharedPosition.longitude)
+    } : null);
+    const parameters = new URLSearchParams({ api: "1" });
+    if (origin && Number.isFinite(Number(origin.latitude)) && Number.isFinite(Number(origin.longitude))) {
+      parameters.set("origin", `${origin.latitude},${origin.longitude}`);
+    }
+    parameters.set("destination", `${latitude},${longitude}`);
+    return `https://www.google.com/maps/dir/?${parameters.toString()}`;
+  }
+
+  function createLiveMapMarkerElement(name, color, isMe = false) {
+    const element = document.createElement("button");
+    element.type = "button";
+    element.className = `live-map-marker${isMe ? " is-me" : ""}`;
+    element.style.setProperty("--live-person-color", color);
+    element.setAttribute("aria-label", name);
+    const dot = document.createElement("span");
+    dot.className = "live-map-marker-dot";
+    dot.setAttribute("aria-hidden", "true");
+    const label = document.createElement("span");
+    label.className = "live-map-marker-name";
+    label.textContent = name;
+    element.append(dot, label);
+    return element;
   }
 
   function googleMapViewUrl(latitude, longitude) {
     return `https://www.google.com/maps/@?api=1&map_action=map&center=${encodeURIComponent(`${latitude},${longitude}`)}&zoom=17`;
+  }
+
+  function geoCircleCoordinates(longitude, latitude, radiusMeters, pointCount = 48) {
+    const earthRadius = 6371008.8;
+    const angularRadius = radiusMeters / earthRadius;
+    const latitudeRadians = latitude * Math.PI / 180;
+    const longitudeRadians = longitude * Math.PI / 180;
+    const coordinates = [];
+    for (let index = 0; index <= pointCount; index += 1) {
+      const bearing = index * 2 * Math.PI / pointCount;
+      const pointLatitude = Math.asin(
+        Math.sin(latitudeRadians) * Math.cos(angularRadius)
+        + Math.cos(latitudeRadians) * Math.sin(angularRadius) * Math.cos(bearing)
+      );
+      const pointLongitude = longitudeRadians + Math.atan2(
+        Math.sin(bearing) * Math.sin(angularRadius) * Math.cos(latitudeRadians),
+        Math.cos(angularRadius) - Math.sin(latitudeRadians) * Math.sin(pointLatitude)
+      );
+      coordinates.push([pointLongitude * 180 / Math.PI, pointLatitude * 180 / Math.PI]);
+    }
+    return coordinates;
+  }
+
+  function updateLiveLocationAccuracyLayer(active) {
+    const features = [...active.entries()].flatMap(([id, position]) => {
+      const radius = Number(position.accuracy_m);
+      const latitude = Number(position.latitude);
+      const longitude = Number(position.longitude);
+      if (!Number.isFinite(radius) || radius <= 0 || !Number.isFinite(latitude) || !Number.isFinite(longitude)) return [];
+      return [{
+        type: "Feature",
+        properties: { participant_id: id, color: liveParticipantColor(id), accuracy_m: radius },
+        geometry: { type: "Polygon", coordinates: [geoCircleCoordinates(longitude, latitude, radius)] }
+      }];
+    });
+    const viewerId = liveViewerParticipantId();
+    if (liveLocationMeCoordinates && liveLocationMeAccuracy > 0 && (!viewerId || !active.has(viewerId))) {
+      const { latitude, longitude } = liveLocationMeCoordinates;
+      features.push({
+        type: "Feature",
+        properties: { participant_id: "me", color: "#2773b8", accuracy_m: liveLocationMeAccuracy },
+        geometry: { type: "Polygon", coordinates: [geoCircleCoordinates(longitude, latitude, liveLocationMeAccuracy)] }
+      });
+    }
+    liveLocationAccuracyGeoJSON = {
+      type: "FeatureCollection",
+      features
+    };
+    syncLiveLocationGeoLayers();
+  }
+
+  function fitLiveLocationRoute(geometry) {
+    if (!liveLocationMapLoaded || !geometry?.coordinates?.length) return;
+    const bounds = geometry.coordinates.reduce(
+      (result, coordinate) => result.extend(coordinate),
+      new maplibregl.LngLatBounds()
+    );
+    liveLocationMap.fitBounds(bounds, { padding: 40, maxZoom: 14 });
+  }
+
+  async function drawLiveRouteTo(latitude, longitude, destinationId) {
+    const requestId = ++liveLocationRouteRequestId;
+    liveLocationRouteAbortController?.abort();
+    liveLocationRouteAbortController = null;
+    liveLocationRouteDestinationId = destinationId;
+    setLiveLocationRoute(null);
+    const active = new Map();
+    liveLocationPositions.forEach((position) => {
+      const participant = tripParticipants.find((item) => item.id === position.participant_id);
+      if (participant) active.set(participant.id, { ...position, participant });
+    });
+    const origin = liveDistanceOrigin(active);
+    if (!origin || !Number.isFinite(Number(origin.latitude)) || !Number.isFinite(Number(origin.longitude))) {
+      setLiveRouteStatus("Để vẽ tuyến, hãy bấm Vị trí của tôi hoặc bật chia sẻ GPS trước.");
+      return;
+    }
+
+    const waitMs = Math.max(0, 1100 - (Date.now() - liveLocationRouteLastRequestedAt));
+    setLiveRouteStatus("Đang tính tuyến đường…");
+    try {
+      if (waitMs) await new Promise((resolve) => setTimeout(resolve, waitMs));
+      if (requestId !== liveLocationRouteRequestId) return;
+      liveLocationRouteLastRequestedAt = Date.now();
+      const coordinates = `${origin.longitude},${origin.latitude};${longitude},${latitude}`;
+      const url = `https://router.project-osrm.org/route/v1/driving/${coordinates}?overview=full&geometries=geojson`;
+      const controller = new AbortController();
+      liveLocationRouteAbortController = controller;
+      const response = await fetch(url, { signal: controller.signal });
+      if (!response.ok) throw new Error("Dịch vụ định tuyến đang bận.");
+      const result = await response.json();
+      const route = result.routes?.[0];
+      if (result.code !== "Ok" || !route?.geometry) throw new Error("Không tìm thấy đường đi bằng ô tô tới vị trí này.");
+      if (requestId !== liveLocationRouteRequestId) return;
+      setLiveLocationRoute({
+        type: "Feature",
+        properties: {
+          distance_m: route.distance,
+          duration_s: route.duration,
+          destination_participant_id: destinationId
+        },
+        geometry: route.geometry
+      });
+      fitLiveLocationRoute(route.geometry);
+      const distance = route.distance >= 1000 ? `${(route.distance / 1000).toFixed(1)} km` : `${Math.round(route.distance)} m`;
+      const minutes = Math.max(1, Math.round(route.duration / 60));
+      setLiveRouteStatus(`Tuyến khoảng ${distance} · ${minutes} phút; chạm marker khác để đổi điểm đến.`);
+    } catch (error) {
+      if (requestId === liveLocationRouteRequestId && error.name !== "AbortError") {
+        setLiveLocationRoute(null);
+        setLiveRouteStatus(`${error.message} Có thể mở Google Maps từ popup marker.`);
+      }
+    } finally {
+      if (requestId === liveLocationRouteRequestId) liveLocationRouteAbortController = null;
+    }
   }
 
   function showMyLocation() {
@@ -1911,18 +2312,17 @@
     navigator.geolocation.getCurrentPosition((position) => {
       locationMeButton.disabled = false;
       const { latitude, longitude, accuracy } = position.coords;
-      const coordinates = [latitude, longitude];
+      const coordinates = [longitude, latitude];
       liveLocationMeCoordinates = { latitude, longitude };
-      liveLocationMap.setView(coordinates, 17, { animate: true });
+      liveLocationMeAccuracy = Number.isFinite(Number(accuracy)) && Number(accuracy) > 0 ? Number(accuracy) : null;
+      liveLocationMap.easeTo({ center: coordinates, zoom: 17 });
       if (!liveLocationMeMarker) {
-        liveLocationMeMarker = L.circleMarker(coordinates, {
-          radius: 9, color: "#fff", weight: 3, fillColor: "#2773b8", fillOpacity: 1
-        }).addTo(liveLocationMap);
-        liveLocationMeMarker.bindTooltip("Vị trí của tôi", {
-          permanent: true, direction: "top", className: "live-me-tooltip", offset: [0, -5]
-        });
+        liveLocationMeMarker = new maplibregl.Marker({
+          element: createLiveMapMarkerElement("Vị trí của tôi", "#2773b8", true),
+          anchor: "bottom"
+        }).setLngLat(coordinates).addTo(liveLocationMap);
       } else {
-        liveLocationMeMarker.setLatLng(coordinates);
+        liveLocationMeMarker.setLngLat(coordinates);
       }
       const popup = document.createElement("div");
       popup.className = "live-marker-popup";
@@ -1934,9 +2334,10 @@
       googleLink.href = googleMapViewUrl(latitude, longitude);
       googleLink.target = "_blank";
       googleLink.rel = "noopener";
-      googleLink.textContent = "Mở và phóng to trên Google Maps";
+      googleLink.textContent = "Mở vị trí trên Google Maps";
       popup.append(label, accuracyLabel, googleLink);
-      liveLocationMeMarker.bindPopup(popup).openPopup();
+      liveLocationMeMarker.setPopup(new maplibregl.Popup({ offset: 18 }).setDOMContent(popup));
+      liveLocationMeMarker.togglePopup();
       const googleMapUrl = googleMapViewUrl(latitude, longitude);
       locationMeGoogleLink.href = googleMapUrl;
       locationMeGoogleLink.hidden = false;
@@ -1954,7 +2355,7 @@
   }
 
   function clearLiveLocationMarkers() {
-    if (liveLocationMap) liveLocationMarkers.forEach(({ marker }) => liveLocationMap.removeLayer(marker));
+    liveLocationMarkers.forEach(({ marker }) => marker.remove());
     liveLocationMarkers.clear();
     liveLocationMarkerSet = "";
   }
@@ -1976,15 +2377,25 @@
         || (participant.id === origin?.participantId ? "Vị trí của bạn" : "Chờ GPS thành viên khác");
       const meta = esc(distance);
       return `<li><button type="button" class="live-person-row is-live" style="${colorStyle}" data-live-person="${esc(participant.id)}"><span class="live-person-main"><i class="live-person-dot" aria-hidden="true"></i><span class="live-person-name">${esc(participant.name)}</span></span><small>${meta}</small></button></li>`;
-    }).join("") : `<li class="live-map-empty">${participantsLoadError ? esc(participantsLoadError) : "Chưa tải được danh sách thành viên."}</li>`;
+    }).join("") : `<li class="live-map-empty">Chưa tải được danh sách thành viên.</li>`;
     $("live-count").textContent = `${active.size}/${tripParticipants.length} đang chia sẻ`;
     $("live-map-empty").textContent = active.size ? "" : "Chưa có thành viên nào đang chia sẻ vị trí.";
     $("live-map-empty").hidden = active.size > 0;
+    updateLiveLocationAccuracyLayer(active);
+
+    if (liveLocationRouteDestinationId && !active.has(liveLocationRouteDestinationId)) {
+      liveLocationRouteRequestId += 1;
+      liveLocationRouteAbortController?.abort();
+      liveLocationRouteAbortController = null;
+      liveLocationRouteDestinationId = "";
+      setLiveLocationRoute(null);
+      setLiveRouteStatus("");
+    }
 
     if (locationPopup.hidden || !ensureLiveLocationMap()) return;
     for (const [id, entry] of liveLocationMarkers) {
       if (!active.has(id)) {
-        liveLocationMap.removeLayer(entry.marker);
+        entry.marker.remove();
         liveLocationMarkers.delete(id);
       }
     }
@@ -1995,19 +2406,28 @@
       const color = liveParticipantColor(id);
       let entry = liveLocationMarkers.get(id);
       if (!entry) {
-        const label = document.createElement("span");
-        label.textContent = position.participant.name;
-        const marker = L.circleMarker([latitude, longitude], {
-          radius: 9, color: "#fff", weight: 3, fillColor: color, fillOpacity: 1
-        }).addTo(liveLocationMap);
-        marker.bindTooltip(label, { permanent: true, direction: "top", className: "live-name-tooltip", offset: [0, -5] });
-        marker.getTooltip()?.getElement()?.style.setProperty("--live-person-color", color);
-        entry = { marker };
+        const element = createLiveMapMarkerElement(position.participant.name, color);
+        const marker = new maplibregl.Marker({ element, anchor: "bottom" })
+          .setLngLat([longitude, latitude])
+          .addTo(liveLocationMap);
+        element.addEventListener("click", (event) => {
+          if (id === liveViewerParticipantId()) return;
+          event.preventDefault();
+          event.stopPropagation();
+          event.stopImmediatePropagation();
+          const target = marker.getLngLat();
+          if (!target) return;
+          window.open(googleDirectionsUrl(target.lat, target.lng), "_blank", "noopener,noreferrer");
+          drawLiveRouteTo(target.lat, target.lng, id);
+        });
+        entry = { marker, element };
         liveLocationMarkers.set(id, entry);
       } else {
-        entry.marker.setLatLng([latitude, longitude]);
-        entry.marker.setStyle({ fillColor: color });
-        entry.marker.getTooltip()?.getElement()?.style.setProperty("--live-person-color", color);
+        entry.marker.setLngLat([longitude, latitude]);
+        const element = entry.marker.getElement();
+        element.style.setProperty("--live-person-color", color);
+        element.setAttribute("aria-label", position.participant.name);
+        element.querySelector(".live-map-marker-name").textContent = position.participant.name;
       }
       const popup = document.createElement("div");
       popup.className = "live-marker-popup";
@@ -2029,19 +2449,22 @@
       directions.rel = "noopener";
       directions.textContent = "Chỉ đường trên Google Maps";
       popup.append(name, meta, distanceMeta, directions);
-      entry.marker.bindPopup(popup);
+      const markerPopup = entry.marker.getPopup();
+      if (markerPopup) markerPopup.setDOMContent(popup);
+      else entry.marker.setPopup(new maplibregl.Popup({ offset: 18 }).setDOMContent(popup));
     });
     const markerSet = [...active.keys()].sort().join(",");
     if (markerSet !== liveLocationMarkerSet) {
       liveLocationMarkerSet = markerSet;
-      if (active.size === 1) {
-        const only = [...active.values()][0];
-        liveLocationMap.setView([Number(only.latitude), Number(only.longitude)], 15);
-      } else if (active.size > 1) {
-        const bounds = L.latLngBounds([...active.values()].map((position) => [Number(position.latitude), Number(position.longitude)]));
-        liveLocationMap.fitBounds(bounds, { padding: [36, 36], maxZoom: 14 });
+      const coordinates = [...active.values()].map((position) => [Number(position.longitude), Number(position.latitude)])
+        .filter(([longitude, latitude]) => Number.isFinite(longitude) && Number.isFinite(latitude));
+      if (coordinates.length === 1) {
+        liveLocationMap.easeTo({ center: coordinates[0], zoom: 15 });
+      } else if (coordinates.length > 1) {
+        const bounds = coordinates.reduce((result, coordinate) => result.extend(coordinate), new maplibregl.LngLatBounds());
+        liveLocationMap.fitBounds(bounds, { padding: 36, maxZoom: 14 });
       } else {
-        liveLocationMap.setView(liveMapDefaultCenter, 8);
+        liveLocationMap.easeTo({ center: liveMapDefaultCenter, zoom: 8 });
       }
     }
   }
@@ -2055,16 +2478,15 @@
     const token = liveLocationRequestToken;
     liveLocationRefreshPromise = (async () => {
       try {
-        const positions = await rpc("get_live_trip_participant_locations", {
-          p_password: editPassword,
-          p_device_id: deviceCookieId
+        const positions = await rpc("get_live_trip_locations_for_device", {
+          p_device_cookie: deviceCookieId
         });
         if (token !== liveLocationRequestToken || !editing || locationPopup.hidden) return;
         renderLiveLocations(positions || []);
       } catch (error) {
         if (token !== liveLocationRequestToken || locationPopup.hidden) return;
-        setLocationSharingStatus(`${error.message} · Chạy supabase-live-location-migration.sql nếu chưa cài chức năng này.`, "error");
-        if (/mật khẩu|đăng nhập thiết bị/i.test(error.message)) setEditing(false, { clearRemembered: true });
+        setLocationSharingStatus(error.message, "error");
+        if (/UNAUTHORIZED_DEVICE|đăng nhập thiết bị/i.test(error.message)) setEditing(false);
       } finally {
         liveLocationRefreshPromise = null;
       }
@@ -2094,10 +2516,8 @@
     liveLocationLastSentAt = now;
     liveLocationUpdateInFlight = true;
     try {
-      await rpc("share_trip_participant_location", {
-        p_password: editPassword,
-        p_device_id: deviceCookieId,
-        p_participant_id: liveLocationParticipantId,
+      await rpc("share_trip_location_for_device", {
+        p_device_cookie: deviceCookieId,
         p_latitude: position.coords.latitude,
         p_longitude: position.coords.longitude,
         p_accuracy_m: position.coords.accuracy
@@ -2107,10 +2527,10 @@
       setLocationSharingStatus(`Đang chia sẻ vị trí của ${participant?.name || "bạn"} · GPS ±${accuracy} m.`, "active");
       if (!locationPopup.hidden) refreshLiveLocations();
     } catch (error) {
-      setLocationSharingStatus(`${error.message} · Chạy supabase-live-location-migration.sql nếu chưa cài chức năng này.`, "error");
-      if (/mật khẩu|đăng nhập bằng tên/i.test(error.message)) {
+      setLocationSharingStatus(error.message, "error");
+      if (/UNAUTHORIZED_DEVICE|đăng nhập bằng tên/i.test(error.message)) {
         stopLocationSharing({ showResult: false, notifyServer: false });
-        setEditing(false, { clearRemembered: true });
+        setEditing(false);
       }
     } finally {
       liveLocationUpdateInFlight = false;
@@ -2185,12 +2605,11 @@
     liveLocationLastSentAt = 0;
     syncLiveLocationControls();
     if (!participantId) return;
-    const password = editPassword;
-    if (!notifyServer || !password) return;
+    if (!notifyServer || !editing) return;
     if (liveLocationUpdatePromise) await liveLocationUpdatePromise;
-    const body = JSON.stringify({ p_password: password, p_device_id: deviceCookieId, p_participant_id: participantId });
+    const body = JSON.stringify({ p_device_cookie: deviceCookieId });
     if (keepalive) {
-      fetch(`${SUPABASE.url}/rest/v1/rpc/stop_trip_participant_location`, {
+      fetch(`${SUPABASE.url}/rest/v1/rpc/stop_trip_location_for_device`, {
         method: "POST",
         headers: { apikey: SUPABASE.anonKey, Authorization: `Bearer ${SUPABASE.anonKey}`, "Content-Type": "application/json" },
         body,
@@ -2199,11 +2618,7 @@
       return;
     }
     try {
-      await rpc("stop_trip_participant_location", {
-        p_password: password,
-        p_device_id: deviceCookieId,
-        p_participant_id: participantId
-      });
+      await rpc("stop_trip_location_for_device", { p_device_cookie: deviceCookieId });
       if (showResult) setLocationSharingStatus("Đã dừng chia sẻ và gỡ vị trí khỏi bản đồ.");
       if (!locationPopup.hidden && editing) refreshLiveLocations();
     } catch (error) {
@@ -2236,7 +2651,7 @@
     syncLiveLocationControls();
     if (editing) startLiveLocationPolling();
     else renderLiveLocations([]);
-    if (ensureLiveLocationMap()) setTimeout(() => liveLocationMap?.invalidateSize(), 100);
+    if (ensureLiveLocationMap()) setTimeout(() => liveLocationMap?.resize(), 100);
   }
   locationToggle.addEventListener("click", openLocationPopup);
   $("location-close").addEventListener("click", closeLocationPopup);
@@ -2247,13 +2662,16 @@
   locationStartButton.addEventListener("click", startLocationSharing);
   locationStopButton.addEventListener("click", () => stopLocationSharing());
   locationMeButton.addEventListener("click", showMyLocation);
+  $("live-layer-accuracy").addEventListener("change", setLiveLocationGeoLayerVisibility);
+  $("live-layer-route").addEventListener("change", setLiveLocationGeoLayerVisibility);
   $("live-people-list").addEventListener("click", (event) => {
     const button = event.target.closest("[data-live-person]");
     if (!button || !liveLocationMap) return;
     const entry = liveLocationMarkers.get(button.dataset.livePerson);
     if (!entry) return;
-    liveLocationMap.setView(entry.marker.getLatLng(), Math.max(liveLocationMap.getZoom(), 15));
-    entry.marker.openPopup();
+    const target = entry.marker.getLngLat();
+    liveLocationMap.easeTo({ center: [target.lng, target.lat], zoom: Math.max(liveLocationMap.getZoom(), 15) });
+    entry.marker.getPopup()?.addTo(liveLocationMap);
   });
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "visible" && !locationPopup.hidden && editing) refreshLiveLocations();
@@ -2286,13 +2704,6 @@
     if (liveLocationWatchId !== null || liveLocationParticipantId !== null) {
       stopLocationSharing({ showResult: false, keepalive: true });
     }
-    if (!editing || !activeSessionId) return;
-    fetch(`${SUPABASE.url}/rest/v1/rpc/close_device_session`, {
-      method: "POST",
-      headers: { apikey: SUPABASE.anonKey, Authorization: `Bearer ${SUPABASE.anonKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ p_session_id: activeSessionId }),
-      keepalive: true
-    }).catch(() => {});
   });
 
   /* Chạy một thao tác ghi, rồi tải lại dữ liệu từ Supabase. */
@@ -2304,7 +2715,7 @@
       return true;
     } catch (error) {
       showStatus(error.message, true);
-      if (/mật khẩu/i.test(error.message)) setEditing(false, { clearRemembered: true });
+      if (/UNAUTHORIZED_DEVICE/i.test(error.message)) setEditing(false);
       return false;
     }
   }
@@ -2441,81 +2852,29 @@
     renderThumbs();
   }, true);
 
-  async function storageRequest(action, extra = {}, file = null) {
-    let body;
-    const headers = { apikey: SUPABASE.anonKey, Authorization: `Bearer ${SUPABASE.anonKey}` };
-    if (file) {
-      body = new FormData();
-      body.append("action", action);
-      body.append("password", editPassword);
-      body.append("file", file);
-    } else {
-      headers["Content-Type"] = "application/json";
-      body = JSON.stringify({ action, password: editPassword, ...extra });
-    }
-    let response;
-    try {
-      response = await fetch(`${SUPABASE.url}/functions/v1/upload-image`, { method: "POST", headers, body });
-    } catch (error) {
-      const detail = error instanceof Error ? error.message : String(error);
-      throw new Error(`Không gọi được Edge Function upload-image (${detail}). Function cần được deploy và phải cho phép CORS preflight OPTIONS.`);
-    }
-    let result;
-    try {
-      result = await response.json();
-    } catch {
-      throw new Error(`Edge Function trả về phản hồi không hợp lệ (HTTP ${response.status}). Kiểm tra nhật ký function trên Supabase.`);
-    }
-    if (!response.ok) throw new Error(result.error || `Storage lỗi (${response.status})`);
-    return result;
+  async function uploadTripImage(file) {
+    if (!editing) throw new Error("Đăng nhập trước khi tải ảnh lên.");
+    const extension = ({ "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" })[file.type.toLowerCase()];
+    if (!extension) throw new Error("Chỉ nhận ảnh JPG, PNG hoặc WebP.");
+    const grant = await rpc("create_trip_image_upload_grant_for_device", {
+      p_device_cookie: deviceCookieId,
+      p_extension: extension
+    });
+    const path = `${grant}/image.${extension}`;
+    const response = await fetch(`${SUPABASE.url}/storage/v1/object/trip-images/${path}`, {
+      method: "POST",
+      headers: {
+        apikey: SUPABASE.anonKey,
+        Authorization: `Bearer ${SUPABASE.anonKey}`,
+        "Content-Type": file.type.toLowerCase(),
+        "x-upsert": "false"
+      },
+      body: file
+    });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(result.message || result.error || `Storage lỗi (${response.status})`);
+    return `${SUPABASE.url}/storage/v1/object/public/trip-images/${path}`;
   }
-
-  async function loadStorageGallery() {
-    const gallery = $("storage-gallery");
-    gallery.hidden = false;
-    gallery.innerHTML = `<p class="hint">Đang tải danh sách ảnh…</p>`;
-    try {
-      const result = await storageRequest("list");
-      const images = result.items || [];
-      gallery.innerHTML = images.length ? images.map((item) => `
-        <div class="storage-card">
-          <img src="${esc(item.publicUrl)}" alt="" loading="lazy">
-          <small>${esc(item.path)}</small>
-          <div class="storage-actions">
-            <button type="button" class="btn sm" data-storage-action="select" data-url="${esc(item.publicUrl)}">Chọn</button>
-            <button type="button" class="btn sm danger" data-storage-action="delete" data-path="${esc(item.path)}">Xóa</button>
-          </div>
-        </div>`).join("") : `<p class="empty">Storage chưa có ảnh nào.</p>`;
-    } catch (error) {
-      gallery.innerHTML = `<p class="empty">${esc(error.message)}</p>`;
-    }
-  }
-
-  $("load-storage-images").addEventListener("click", loadStorageGallery);
-  $("storage-gallery").addEventListener("click", async (event) => {
-    const button = event.target.closest("[data-storage-action]");
-    if (!button) return;
-    if (button.dataset.storageAction === "select") {
-      useImageUrl(button.dataset.url);
-      return;
-    }
-    const path = button.dataset.path;
-    if (!confirm(`Xóa vĩnh viễn ảnh “${path}” khỏi Storage?`)) return;
-    button.disabled = true;
-    try {
-      await storageRequest("delete", { path });
-      if (draft.image.endsWith(`/ha_giang/${path}`)) {
-        draft.image = "";
-        draft.manual = true;
-        renderThumbs();
-      }
-      imageStatus.textContent = "Đã xóa ảnh khỏi Storage.";
-      await loadStorageGallery();
-    } catch (error) {
-      imageStatus.textContent = error.message;
-      button.disabled = false;
-    }
-  });
 
   $("upload-image").addEventListener("click", async () => {
     const file = $("image-file").files[0];
@@ -2528,13 +2887,12 @@
     button.disabled = true;
     imageStatus.textContent = "Đang tải ảnh lên Storage…";
     try {
-      const result = await storageRequest("upload", {}, file);
-      useImageUrl(result.publicUrl);
+      const publicUrl = await uploadTripImage(file);
+      useImageUrl(publicUrl);
       $("image-file").value = "";
       imageStatus.textContent = "Ảnh đã tải lên Storage; bấm Lưu để gắn vào lịch trình.";
-      await loadStorageGallery();
     } catch (error) {
-      imageStatus.textContent = `${error.message}. Kiểm tra Edge Function upload-image và bucket ha_giang.`;
+      imageStatus.textContent = error.message;
     } finally {
       button.disabled = false;
     }
@@ -2553,14 +2911,32 @@
     else preview.removeAttribute("src");
   }
 
+  function syncExpensePayer() {
+    const fromFund = expenseForm.elements.paid_from_fund.checked;
+    const shared = expenseForm.elements.is_shared;
+    const payer = expenseForm.elements.paid_by;
+    if (fromFund) shared.checked = true;
+    shared.disabled = fromFund;
+    payer.disabled = fromFund;
+    payer.required = !fromFund;
+    if (fromFund) payer.value = "";
+  }
+
   function openExpenseEditor(id = null) {
     const expense = id ? expenses.find((item) => item.id === id) : null;
     expenseDraftId = expense?.id ?? null;
     expenseForm.reset();
-    syncParticipantSelect(expenseForm.elements.paid_by, expense?.paid_by || getCookie("ha_login_participant"));
+    syncParticipantSelect(expenseForm.elements.paid_by, expense?.paid_by_participant_id || expense?.paid_by || getCookie("ha_login_participant"));
     expenseForm.elements.title.value = expense?.title ?? "";
     expenseForm.elements.amount.value = expense?.amount ?? "";
-    expenseForm.elements.paid_by.value = expense?.paid_by || getCookie("ha_login_participant") || "";
+    expenseForm.elements.paid_by.value = expense?.paid_by_participant_id
+      || tripParticipants.find((participant) => participant.name === expense?.paid_by)?.id
+      || tripParticipants.find((participant) => participant.name === getCookie("ha_login_participant"))?.id
+      || "";
+    expenseForm.elements.category.value = expense?.category || "Khác";
+    expenseForm.elements.is_shared.checked = expense?.is_shared !== false;
+    expenseForm.elements.paid_from_fund.checked = expense?.paid_from_fund === true;
+    syncExpensePayer();
     expenseForm.elements.note.value = expense?.note ?? "";
     $("expense-image-status").textContent = "";
     showExpenseImage(expense?.image_url ?? "");
@@ -2569,6 +2945,7 @@
     expenseForm.elements.title.focus();
   }
 
+  expenseForm.elements.paid_from_fund.addEventListener("change", syncExpensePayer);
   $("add-expense").addEventListener("click", () => { if (editing) openExpenseEditor(); });
   $("upload-expense-image").addEventListener("click", async () => {
     const file = $("expense-file").files[0];
@@ -2581,12 +2958,12 @@
     button.disabled = true;
     $("expense-image-status").textContent = "Đang tải ảnh lên Storage…";
     try {
-      const result = await storageRequest("upload", {}, file);
-      showExpenseImage(result.publicUrl);
+      const publicUrl = await uploadTripImage(file);
+      showExpenseImage(publicUrl);
       $("expense-file").value = "";
       $("expense-image-status").textContent = "Ảnh đã lưu trong Storage và được gắn vào khoản chi khi bạn bấm Lưu.";
     } catch (error) {
-      $("expense-image-status").textContent = `${error.message}. Kiểm tra Edge Function upload-image và bucket ha_giang.`;
+      $("expense-image-status").textContent = error.message;
     } finally {
       button.disabled = false;
     }
@@ -2601,14 +2978,18 @@
     if (!editing) return;
     const submit = expenseForm.querySelector("[type=submit]");
     submit.disabled = true;
-    const saved = await mutate(() => rpc("save_estimated_expense", {
-      p_password: editPassword,
+    const paidFromFund = expenseForm.elements.paid_from_fund.checked;
+    const saved = await mutate(() => rpc("save_estimated_expense_with_image_for_device", {
+      p_device_cookie: deviceCookieId,
       p_id: expenseDraftId,
       p_title: expenseForm.elements.title.value.trim(),
       p_amount: Number(expenseForm.elements.amount.value),
       p_note: expenseForm.elements.note.value.trim(),
       p_image_url: expenseDraftImage || null,
-      p_paid_by: expenseForm.elements.paid_by.value || null
+      p_paid_by_id: paidFromFund ? null : expenseForm.elements.paid_by.value || null,
+      p_category: expenseForm.elements.category.value,
+      p_is_shared: paidFromFund || expenseForm.elements.is_shared.checked,
+      p_paid_from_fund: paidFromFund
     }));
     submit.disabled = false;
     if (saved) expenseDialog.close();
@@ -2620,7 +3001,64 @@
     if (!expense) return;
     if (button.dataset.expenseAction === "edit") return openExpenseEditor(expense.id);
     if (!confirm(`Xóa khoản chi “${expense.title}”?`)) return;
-    mutate(() => rpc("delete_estimated_expense", { p_password: editPassword, p_id: expense.id }));
+    mutate(() => rpc("delete_estimated_expense_for_device", { p_device_cookie: deviceCookieId, p_id: expense.id }));
+  });
+
+  const tripBudgetForm = $("trip-budget-form");
+  tripBudgetForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!editing) return;
+    const submit = tripBudgetForm.querySelector("[type=submit]");
+    submit.disabled = true;
+    const saved = await mutate(() => rpc("save_trip_budget_for_device", {
+      p_device_cookie: deviceCookieId,
+      p_planned_budget: Number(tripBudgetForm.elements.planned_budget.value || 0)
+    }));
+    submit.disabled = false;
+    if (saved) showStatus("Đã cập nhật ngân sách chuyến đi.");
+  });
+
+  const contributionDialog = $("fund-contribution-dialog");
+  const contributionForm = $("fund-contribution-form");
+  let contributionDraftId = null;
+  function openFundContributionEditor(id = null) {
+    if (!editing) return;
+    const contribution = id ? tripFundContributions.find((item) => item.id === id) : null;
+    contributionDraftId = contribution?.id || null;
+    contributionForm.reset();
+    syncParticipantSelect(contributionForm.elements.participant_id, contribution?.participant_id || getCookie("ha_login_participant"));
+    contributionForm.elements.amount.value = contribution?.amount ?? "";
+    contributionForm.elements.note.value = contribution?.note ?? "";
+    $("fund-contribution-title").textContent = contribution ? "Sửa đóng góp quỹ" : "Thêm đóng góp quỹ";
+    contributionDialog.showModal();
+  }
+  $("add-fund-contribution").addEventListener("click", () => openFundContributionEditor());
+  $("fund-contribution-list").addEventListener("click", (event) => {
+    const button = event.target.closest("[data-contribution-action]");
+    if (!button || !editing) return;
+    const contribution = tripFundContributions.find((item) => item.id === button.dataset.id);
+    if (!contribution) return;
+    if (button.dataset.contributionAction === "edit") return openFundContributionEditor(contribution.id);
+    if (!confirm(`Xóa khoản góp ${formatVnd(contribution.amount)} của ${contribution.participant_name}?`)) return;
+    mutate(() => rpc("delete_trip_fund_contribution_for_device", {
+      p_device_cookie: deviceCookieId,
+      p_id: contribution.id
+    }));
+  });
+  contributionForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!editing) return;
+    const submit = contributionForm.querySelector("[type=submit]");
+    submit.disabled = true;
+    const saved = await mutate(() => rpc("save_trip_fund_contribution_for_device", {
+      p_device_cookie: deviceCookieId,
+      p_id: contributionDraftId,
+      p_participant_id: contributionForm.elements.participant_id.value,
+      p_amount: Number(contributionForm.elements.amount.value),
+      p_note: contributionForm.elements.note.value.trim()
+    }));
+    submit.disabled = false;
+    if (saved) contributionDialog.close();
   });
 
   const participantDialog = $("participant-dialog");
@@ -2629,7 +3067,7 @@
   function openParticipantEditor(id) {
     if (!editing) return;
     if (!participantContactSchemaReady) {
-      showStatus("Chạy migration supabase-participant-contacts-migration.sql để lưu liên hệ thành viên.", true);
+      showStatus("Đăng nhập để cập nhật thông tin liên hệ.", true);
       return;
     }
     const participant = tripParticipants.find((item) => item.id === id);
@@ -2652,9 +3090,9 @@
     if (!editing || !participantDraftId) return;
     const submit = participantForm.querySelector("[type=submit]");
     submit.disabled = true;
-    const saved = await mutate(() => rpc("save_trip_participant_contact", {
-      p_password: editPassword,
-      p_id: participantDraftId,
+    const saved = await mutate(() => rpc("save_trip_participant_contact_for_device", {
+      p_device_cookie: deviceCookieId,
+      p_participant_id: participantDraftId,
       p_phone: participantForm.elements.phone.value.trim(),
       p_map_location: participantForm.elements.map_location.value.trim()
     }));
@@ -2690,13 +3128,18 @@
   taskForm.addEventListener("submit", async (event) => {
     event.preventDefault();
     if (!editing) return;
+    const assignee = tripParticipants.find((participant) => participant.name === taskForm.elements.assignee.value.trim());
+    if (!assignee) {
+      showStatus("Chọn người phụ trách trong danh sách thành viên.", true);
+      return;
+    }
     const submit = taskForm.querySelector("[type=submit]");
     submit.disabled = true;
-    const saved = await mutate(() => rpc("save_assigned_task_with_time", {
-      p_password: editPassword,
+    const saved = await mutate(() => rpc("save_assigned_task_with_time_for_device", {
+      p_device_cookie: deviceCookieId,
       p_id: taskDraftId,
       p_title: taskForm.elements.title.value.trim(),
-      p_assignee: taskForm.elements.assignee.value.trim(),
+      p_assignee_id: assignee.id,
       p_description: taskForm.elements.description.value.trim(),
       p_status: taskForm.elements.status.value,
       p_due_date: taskForm.elements.due_date.value || null,
@@ -2712,7 +3155,7 @@
     if (!task) return;
     if (button.dataset.taskAction === "edit") return openTaskEditor(task.id);
     if (!confirm(`Xóa công việc “${task.title}”?`)) return;
-    mutate(() => rpc("delete_assigned_task", { p_password: editPassword, p_id: task.id }));
+    mutate(() => rpc("delete_assigned_task_for_device", { p_device_cookie: deviceCookieId, p_id: task.id }));
   });
 
   form.addEventListener("submit", async (event) => {
@@ -2723,15 +3166,18 @@
     await (draft.manual ? pendingSearch : runSearch(true));
 
     const fields = form.elements;
-    const saved = await mutate(() => rpc("save_stop", {
-      p_password: editPassword,
+    const existing = draft.id ? findStop(draft.id)?.stop : null;
+    const day = days.find((item) => item.id === draft.dayId);
+    const saved = await mutate(() => rpc("save_itinerary_stop_for_device", {
+      p_device_cookie: deviceCookieId,
       p_id: draft.id,
       p_day_id: draft.dayId,
       p_time_label: fields.time.value,
       p_title: fields.title.value,
       p_description: fields.desc.value,
       p_note: fields.note.value,
-      p_image_url: draft.image || null
+      p_image_url: draft.image || null,
+      p_sort_order: existing?.sort_order ?? day?.stops.length ?? 0
     }));
     submit.disabled = false;
     if (saved) editor.close();
@@ -2749,22 +3195,46 @@
     if (action === "delete") {
       const { stop } = findStop(id);
       if (!confirm(`Xóa mục “${stop.title}”?`)) return;
-      mutate(() => rpc("delete_stop", { p_password: editPassword, p_id: id }));
+      mutate(() => rpc("delete_itinerary_stop_for_device", { p_device_cookie: deviceCookieId, p_id: id }));
     } else {
-      mutate(() => rpc("move_stop", { p_password: editPassword, p_id: id, p_dir: action === "up" ? -1 : 1 }));
+      mutate(() => moveItineraryStop(id, action === "up" ? -1 : 1));
     }
   });
+
+  async function moveItineraryStop(id, direction) {
+    const current = findStop(id);
+    if (!current) return;
+    const targetIndex = current.index + direction;
+    if (targetIndex < 0 || targetIndex >= current.day.stops.length) return;
+    const saveOrder = (stop, sortOrder) => rpc("save_itinerary_stop_for_device", {
+      p_device_cookie: deviceCookieId,
+      p_id: stop.id,
+      p_day_id: stop.day_id,
+      p_time_label: stop.time_label || "",
+      p_title: stop.title,
+      p_description: stop.description || "",
+      p_note: stop.note || "",
+      p_image_url: stop.image_url || null,
+      p_sort_order: sortOrder
+    });
+    const reordered = [...current.day.stops];
+    const [moved] = reordered.splice(current.index, 1);
+    reordered.splice(targetIndex, 0, moved);
+    for (const [sortOrder, stop] of reordered.entries()) {
+      await saveOrder(stop, sortOrder);
+    }
+  }
 
   /* ---------- Khởi động ---------- */
   startSessionRealtime();
   showStatus("Đang tải lịch trình…");
   refresh()
     .then(async () => {
+      await restoreDeviceSession();
       showStatus("");
-      await restoreRememberedDevice();
     })
     .catch((error) => showStatus(
-      `Không tải được dữ liệu: ${error.message}. Chạy supabase-expenses-and-task-time-migration.sql trong Supabase SQL Editor, đồng thời kiểm tra schema lịch trình hiện có.`, true));
+      `Không tải được dữ liệu từ Supabase: ${error.message}. Kiểm tra các migration trong supabase/migrations của ứng dụng mobile.`, true));
 })();
 </script>
 </body>
