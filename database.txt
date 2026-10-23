@@ -1,0 +1,216 @@
+create table public.trip_finance_settings (
+  id smallint not null,
+  planned_budget numeric not null default 0,
+  updated_at timestamp with time zone not null default now(),
+  constraint trip_finance_settings_pkey primary key (id),
+  constraint trip_finance_settings_id_check check ((id = 1)),
+  constraint trip_finance_settings_planned_budget_check check ((planned_budget >= (0)::numeric))
+) TABLESPACE pg_default;
+create table public.trip_fund_contributions (
+  id uuid not null default gen_random_uuid (),
+  participant_id uuid not null,
+  amount numeric not null,
+  note text not null default ''::text,
+  created_at timestamp with time zone not null default now(),
+  updated_at timestamp with time zone not null default now(),
+  constraint trip_fund_contributions_pkey primary key (id),
+  constraint trip_fund_contributions_participant_id_fkey foreign KEY (participant_id) references trip_participants (id) on delete RESTRICT,
+  constraint trip_fund_contributions_amount_check check ((amount > (0)::numeric))
+) TABLESPACE pg_default;
+
+create index IF not exists trip_fund_contributions_created_idx on public.trip_fund_contributions using btree (created_at desc) TABLESPACE pg_default;
+create table public.trip_image_upload_grants (
+  id uuid not null,
+  device_cookie_hash text not null,
+  object_name text not null,
+  expires_at timestamp with time zone not null,
+  constraint trip_image_upload_grants_pkey primary key (id),
+  constraint trip_image_upload_grants_object_name_key unique (object_name)
+) TABLESPACE pg_default;
+
+create table public.trip_participant_locations (
+  participant_id uuid not null,
+  device_cookie text not null,
+  latitude double precision not null,
+  longitude double precision not null,
+  accuracy_m double precision null,
+  updated_at timestamp with time zone not null default now(),
+  constraint trip_participant_locations_pkey primary key (participant_id),
+  constraint trip_participant_locations_participant_id_fkey foreign KEY (participant_id) references trip_participants (id) on delete CASCADE,
+  constraint trip_participant_locations_accuracy_m_check check (
+    (
+      (accuracy_m is null)
+      or (
+        (accuracy_m >= (0)::double precision)
+        and (accuracy_m <= (100000)::double precision)
+      )
+    )
+  ),
+  constraint trip_participant_locations_latitude_check check (
+    (
+      (latitude >= ('-90'::integer)::double precision)
+      and (latitude <= (90)::double precision)
+    )
+  ),
+  constraint trip_participant_locations_longitude_check check (
+    (
+      (longitude >= ('-180'::integer)::double precision)
+      and (longitude <= (180)::double precision)
+    )
+  )
+) TABLESPACE pg_default;
+
+create index IF not exists trip_participant_locations_updated_at_idx on public.trip_participant_locations using btree (updated_at desc) TABLESPACE pg_default;
+create table public.trip_participants (
+  id uuid not null default gen_random_uuid (),
+  name text not null,
+  sort_order integer not null default 0,
+  created_at timestamp with time zone not null default now(),
+  phone text not null default ''::text,
+  map_location text not null default ''::text,
+  map_color text not null default '#287D68'::text,
+  avatar_url text null,
+  constraint trip_participants_pkey primary key (id),
+  constraint trip_participants_name_unique unique (name),
+  constraint trip_participants_name_nonempty check ((length(btrim(name)) > 0))
+) TABLESPACE pg_default;
+
+create index IF not exists trip_participants_sort_order_idx on public.trip_participants using btree (sort_order, id) TABLESPACE pg_default;
+
+create trigger sync_trip_participants_public
+after INSERT
+or DELETE
+or
+update on trip_participants for EACH row
+execute FUNCTION sync_trip_participants_public ();
+create table public.trip_participants_public (
+  id uuid not null,
+  name text not null,
+  map_color text not null,
+  avatar_url text null,
+  constraint trip_participants_public_pkey primary key (id),
+  constraint trip_participants_public_id_fkey foreign KEY (id) references trip_participants (id) on delete CASCADE
+) TABLESPACE pg_default;
+create table public.app_secrets (
+  id integer not null,
+  edit_password_hash text not null,
+  constraint app_secrets_pkey primary key (id),
+  constraint app_secrets_id_check check ((id = 1))
+) TABLESPACE pg_default;
+create table public.assigned_tasks (
+  id uuid not null default gen_random_uuid (),
+  title text not null,
+  assignee text not null,
+  description text not null default ''::text,
+  status text not null default 'Chưa bắt đầu'::text,
+  due_date date null,
+  due_time time without time zone null,
+  created_at timestamp with time zone not null default now(),
+  updated_at timestamp with time zone not null default now(),
+  constraint assigned_tasks_pkey primary key (id),
+  constraint assigned_tasks_assignee_check check ((length(btrim(assignee)) > 0)),
+  constraint assigned_tasks_title_check check ((length(btrim(title)) > 0))
+) TABLESPACE pg_default;
+create table public.audit_logs (
+  id uuid not null default gen_random_uuid (),
+  action text not null,
+  entity_type text null,
+  entity_id uuid null,
+  actor text null,
+  device_id text null,
+  details text null,
+  created_at timestamp with time zone null default now(),
+  constraint audit_logs_pkey primary key (id)
+) TABLESPACE pg_default;create table public.device_sessions (
+  id uuid not null,
+  device_cookie text not null,
+  user_name text not null,
+  device_name text not null,
+  logged_in_at timestamp with time zone not null default now(),
+  last_seen_at timestamp with time zone not null default now(),
+  logged_out_at timestamp with time zone null,
+  constraint device_sessions_pkey primary key (id)
+) TABLESPACE pg_default;
+
+create unique INDEX IF not exists device_sessions_device_cookie_uidx on public.device_sessions using btree (device_cookie) TABLESPACE pg_default;
+
+create trigger clear_trip_location_after_session_close
+after
+update OF logged_out_at,
+user_name on device_sessions for EACH row
+execute FUNCTION clear_trip_location_on_session_close ();
+
+create trigger sync_device_sessions_public_roster
+after INSERT
+or
+update on device_sessions for EACH row
+execute FUNCTION sync_device_sessions_public_roster ();create table public.device_sessions_public (
+  id uuid not null,
+  user_name text not null,
+  device_name text not null,
+  logged_in_at timestamp with time zone not null,
+  last_seen_at timestamp with time zone not null,
+  constraint device_sessions_public_pkey primary key (id),
+  constraint device_sessions_public_id_fkey foreign KEY (id) references device_sessions (id) on delete CASCADE
+) TABLESPACE pg_default;create table public.estimated_expenses (
+  id uuid not null default gen_random_uuid (),
+  title text not null,
+  amount numeric not null,
+  note text not null default ''::text,
+  image_url text null,
+  created_at timestamp with time zone not null default now(),
+  updated_at timestamp with time zone not null default now(),
+  paid_by text null,
+  image_uploaded_at timestamp with time zone null,
+  paid_by_participant_id uuid null,
+  category text not null default 'Khác'::text,
+  is_shared boolean not null default true,
+  paid_from_fund boolean not null default false,
+  constraint estimated_expenses_pkey primary key (id),
+  constraint estimated_expenses_paid_by_participant_id_fkey foreign KEY (paid_by_participant_id) references trip_participants (id) on delete set null,
+  constraint estimated_expenses_amount_check check ((amount >= (0)::numeric)),
+  constraint estimated_expenses_title_check check ((length(btrim(title)) > 0))
+) TABLESPACE pg_default;create table public.itinerary_days (
+  id uuid not null default gen_random_uuid (),
+  trip_date date not null,
+  label text not null,
+  title text not null,
+  subtitle text not null default ''::text,
+  sort_order integer not null default 0,
+  constraint itinerary_days_pkey primary key (id)
+) TABLESPACE pg_default;create table public.itinerary_stops (
+  id uuid not null default gen_random_uuid (),
+  day_id uuid not null,
+  time_label text not null default ''::text,
+  title text not null,
+  description text not null default ''::text,
+  note text not null default ''::text,
+  image_url text null,
+  image_query text null,
+  sort_order integer not null default 0,
+  created_at timestamp with time zone not null default now(),
+  image_uploaded_at timestamp with time zone null,
+  constraint itinerary_stops_pkey primary key (id),
+  constraint itinerary_stops_day_id_fkey foreign KEY (day_id) references itinerary_days (id) on delete CASCADE
+) TABLESPACE pg_default;
+
+create index IF not exists itinerary_stops_day_order_idx on public.itinerary_stops using btree (day_id, sort_order) TABLESPACE pg_default;create view public.itinerary_view
+with
+  (security_invoker = true) as
+select
+  d.trip_date,
+  d.label as day_label,
+  d.title as day_title,
+  s.id as stop_id,
+  s.time_label,
+  s.title,
+  s.description,
+  s.note,
+  s.image_url,
+  s.sort_order
+from
+  itinerary_days d
+  left join itinerary_stops s on s.day_id = d.id
+order by
+  d.sort_order,
+  s.sort_order;
