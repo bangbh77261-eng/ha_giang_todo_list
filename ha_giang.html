@@ -717,7 +717,15 @@
   .participants-count { margin-left: auto; padding: 5px 10px; border: 1px solid #dce8dc; border-radius: 999px; background: #f1f6ef; color: #557b60; font-size: .7rem; font-weight: 700; }
   .participant-list { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin: 18px 0 0; padding: 0; list-style: none; }
   .participant-card { display: flex; align-items: center; gap: 10px; min-width: 0; padding: 11px 12px; border: 1px solid #e3ebe2; border-radius: 13px; background: linear-gradient(140deg, #fcfdfb, #f5f8f3); }
-  .participant-avatar { display: grid; flex: none; place-items: center; width: 36px; height: 36px; border: 1px solid #d9e6d8; border-radius: 12px; background: linear-gradient(145deg, #edf5ec, #e5eee5); color: #38654d; font-size: .65rem; font-weight: 700; }
+  .participant-avatar { position: relative; display: grid; flex: none; place-items: center; width: 36px; height: 36px; overflow: hidden; border: 1px solid #d9e6d8; border-radius: 12px; background: linear-gradient(145deg, #edf5ec, #e5eee5); color: #38654d; font-size: .65rem; font-weight: 700; }
+  .participant-avatar img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: inherit; }
+  .participant-avatar-editor { display: grid; grid-template-columns: 72px minmax(0, 1fr); align-items: center; gap: 12px; padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg); }
+  .participant-avatar-preview { position: relative; display: grid; place-items: center; width: 72px; height: 72px; overflow: hidden; border: 1px solid #d9e6d8; border-radius: 20px; background: linear-gradient(145deg, #edf5ec, #e5eee5); color: #38654d; font-size: 1rem; font-weight: 700; }
+  .participant-avatar-preview img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .participant-avatar-tools { display: grid; gap: 7px; min-width: 0; }
+  .participant-avatar-tools input[type=file] { width: 100%; font: .82rem var(--font); }
+  .participant-avatar-actions { display: flex; flex-wrap: wrap; gap: 7px; }
+  .participant-avatar-status { grid-column: 1 / -1; margin: 0; color: var(--muted); font-size: .78rem; }
   .participant-name { min-width: 0; overflow-wrap: anywhere; color: #294536; font-size: .76rem; font-weight: 600; line-height: 1.35; }
   .participant-list .empty { grid-column: 1 / -1; }
   @media (max-width: 900px) { .participant-list { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
@@ -1226,8 +1234,16 @@
 
   <dialog id="participant-dialog" aria-labelledby="participant-dialog-title">
     <form class="dlg" id="participant-form">
-      <h2 id="participant-dialog-title">Cập nhật liên hệ</h2>
+      <h2 id="participant-dialog-title">Cập nhật hồ sơ thành viên</h2>
       <p class="hint" id="participant-edit-name"></p>
+      <section class="participant-avatar-editor" aria-label="Ảnh đại diện thành viên">
+        <div class="participant-avatar-preview"><img id="participant-avatar-preview" alt="Ảnh đại diện hiện tại" hidden><span id="participant-avatar-initial">?</span></div>
+        <div class="participant-avatar-tools">
+          <label class="field" for="participant-avatar-file">Ảnh đại diện<input id="participant-avatar-file" type="file" accept="image/jpeg,image/png,image/webp"></label>
+          <div class="participant-avatar-actions"><button type="button" class="btn" id="save-participant-avatar">Lưu avatar</button><button type="button" class="btn" id="remove-participant-avatar">Xóa ảnh</button></div>
+        </div>
+        <p class="participant-avatar-status" id="participant-avatar-status" role="status">JPG, PNG hoặc WebP, tối đa 5 MB. Ảnh lưu trong Supabase Storage.</p>
+      </section>
       <label class="field">Số điện thoại<input name="phone" type="tel" inputmode="tel" maxlength="32" autocomplete="tel" placeholder="Ví dụ: 0912 345 678"></label>
       <label class="field">Địa chỉ hoặc tọa độ<input name="map_location" maxlength="300" autocomplete="street-address" placeholder="Tên địa điểm, địa chỉ hoặc 21.0307, 105.8523"></label>
       <p class="hint">Nút Google Maps sẽ mở vị trí đã nhập. Hãy nhập thông tin người đó đã đồng ý chia sẻ; nội dung hiển thị cho mọi người mở trang.</p>
@@ -1660,6 +1676,15 @@
       : `${words[0][0]}${words[words.length - 1][0]}`.toLocaleUpperCase("vi");
   }
 
+  function participantAvatarUrl(participant) {
+    try {
+      const url = new URL(String(participant?.avatar_url || ""));
+      return url.protocol === "https:" ? url.href : "";
+    } catch {
+      return "";
+    }
+  }
+
   function renderParticipants() {
     const list = $("participant-list");
     $("participant-count").textContent = `${tripParticipants.length} thành viên`;
@@ -1681,7 +1706,7 @@
       return `
       <li class="participant-card">
         <div class="participant-main">
-          <div class="participant-title"><${personTag} class="participant-person" ${personLink}><span class="participant-avatar" aria-hidden="true">${esc(participantInitials(participant.name))}</span><span class="participant-name">${esc(participant.name)}</span></${personTag}></div>
+          <div class="participant-title"><${personTag} class="participant-person" ${personLink}><span class="participant-avatar" aria-hidden="true">${participantAvatarUrl(participant) ? `<img src="${esc(participantAvatarUrl(participant))}" alt="" loading="lazy" onerror="this.remove()">` : ""}<span>${esc(participantInitials(participant.name))}</span></span><span class="participant-name">${esc(participant.name)}</span></${personTag}></div>
           ${location ? `<span class="participant-location">📍 ${esc(location)}</span>` : ""}
           <div class="participant-contact">
             ${phone ? `<a class="btn" href="tel:${encodeURIComponent(phone)}" aria-label="Gọi ${esc(participant.name)}">Gọi · ${esc(phone)}</a><a class="btn" href="${zaloUrl}" target="_blank" rel="noopener" aria-label="Mở Zalo tìm ${esc(participant.name)}">Zalo</a>` : `<span class="participant-missing">Chưa có số điện thoại</span>`}
@@ -1992,7 +2017,7 @@
     editing = on;
     if (!on) {
       participantContactSchemaReady = false;
-      tripParticipants = tripParticipants.map(({ id, name, sort_order }) => ({ id, name, sort_order }));
+      tripParticipants = tripParticipants.map(({ id, name, sort_order, avatar_url }) => ({ id, name, sort_order, avatar_url }));
       tripBudget = 0;
       tripFundContributions = [];
       privateFinanceError = "";
@@ -3339,6 +3364,82 @@
   const participantDialog = $("participant-dialog");
   const participantForm = $("participant-form");
   let participantDraftId = null;
+  let participantAvatarObjectUrl = "";
+  const participantAvatarFile = $("participant-avatar-file");
+  const participantAvatarPreview = $("participant-avatar-preview");
+  const participantAvatarInitial = $("participant-avatar-initial");
+  const participantAvatarStatus = $("participant-avatar-status");
+  function setParticipantAvatarPreview(url, name) {
+    if (participantAvatarObjectUrl) {
+      URL.revokeObjectURL(participantAvatarObjectUrl);
+      participantAvatarObjectUrl = "";
+    }
+    participantAvatarPreview.onerror = () => {
+      participantAvatarPreview.hidden = true;
+      participantAvatarInitial.hidden = false;
+    };
+    participantAvatarPreview.src = url || "";
+    participantAvatarPreview.hidden = !url;
+    participantAvatarInitial.hidden = Boolean(url);
+    participantAvatarInitial.textContent = participantInitials(name || "?");
+  }
+  participantAvatarFile.addEventListener("change", () => {
+    const file = participantAvatarFile.files?.[0];
+    if (!file) return;
+    if (!/^image\/(jpeg|png|webp)$/.test(file.type) || file.size > 5 * 1024 * 1024) {
+      participantAvatarStatus.textContent = "Chỉ nhận JPG, PNG hoặc WebP tối đa 5 MB.";
+      participantAvatarFile.value = "";
+      return;
+    }
+    if (participantAvatarObjectUrl) URL.revokeObjectURL(participantAvatarObjectUrl);
+    participantAvatarObjectUrl = URL.createObjectURL(file);
+    participantAvatarPreview.src = participantAvatarObjectUrl;
+    participantAvatarPreview.hidden = false;
+    participantAvatarInitial.hidden = true;
+    participantAvatarStatus.textContent = "Ảnh đã chọn. Bấm Lưu avatar để cập nhật hồ sơ.";
+  });
+
+  async function saveParticipantAvatar(remove = false) {
+    if (!editing || !participantContactSchemaReady || !participantDraftId) return;
+    const file = participantAvatarFile.files?.[0];
+    if (!remove && !file) {
+      participantAvatarStatus.textContent = "Chọn ảnh mới trước khi lưu.";
+      return;
+    }
+    if (!remove && (!/^image\/(jpeg|png|webp)$/.test(file.type) || file.size <= 0 || file.size > 5 * 1024 * 1024)) {
+      participantAvatarStatus.textContent = "Chỉ nhận JPG, PNG hoặc WebP tối đa 5 MB.";
+      return;
+    }
+    const saveButton = $("save-participant-avatar");
+    const removeButton = $("remove-participant-avatar");
+    saveButton.disabled = true;
+    removeButton.disabled = true;
+    participantAvatarStatus.textContent = remove ? "Đang xóa ảnh đại diện…" : "Đang tải ảnh và lưu hồ sơ…";
+    try {
+      const avatarUrl = remove ? null : await uploadTripImage(file);
+      await rpc("save_trip_participant_avatar_for_device", {
+        p_device_cookie: deviceCookieId,
+        p_participant_id: participantDraftId,
+        p_avatar_url: avatarUrl
+      });
+      await refresh();
+      const participant = tripParticipants.find((item) => item.id === participantDraftId);
+      participantAvatarFile.value = "";
+      setParticipantAvatarPreview(participantAvatarUrl(participant), participant?.name);
+      participantAvatarStatus.textContent = remove ? "Đã xóa ảnh đại diện." : "Đã cập nhật avatar trên Supabase.";
+      showStatus("");
+    } catch (error) {
+      participantAvatarStatus.textContent = error.message || "Không lưu được avatar.";
+      showStatus(error.message || "Không lưu được avatar.", true);
+      if (/UNAUTHORIZED_DEVICE/i.test(error.message)) setEditing(false);
+    } finally {
+      saveButton.disabled = false;
+      removeButton.disabled = false;
+    }
+  }
+  $("save-participant-avatar").addEventListener("click", () => saveParticipantAvatar());
+  $("remove-participant-avatar").addEventListener("click", () => saveParticipantAvatar(true));
+
   function openParticipantEditor(id) {
     if (!editing) return;
     if (!participantContactSchemaReady) {
@@ -3351,6 +3452,9 @@
     participantForm.reset();
     participantForm.elements.phone.value = participant.phone || "";
     participantForm.elements.map_location.value = participant.map_location || "";
+    participantAvatarStatus.textContent = "JPG, PNG hoặc WebP, tối đa 5 MB. Ảnh lưu trong Supabase Storage.";
+    $("remove-participant-avatar").disabled = !participantAvatarUrl(participant);
+    setParticipantAvatarPreview(participantAvatarUrl(participant), participant.name);
     $("participant-edit-name").textContent = participant.name;
     participantDialog.showModal();
     participantForm.elements.phone.focus();
