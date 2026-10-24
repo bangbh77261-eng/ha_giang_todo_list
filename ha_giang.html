@@ -22,6 +22,7 @@
     --font: "Be Vietnam Pro", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     color-scheme: light dark;
   }
+
   @media (prefers-color-scheme: dark) {
     :root {
       --bg: #0f1b1d;
@@ -826,6 +827,7 @@
     box-shadow: 0 12px 34px rgb(68 43 33 / .22);
     font: 600 .84rem var(--font);
     cursor: pointer;
+    text-decoration: none;
   }
   .location-fab:hover { background: #a94d3b; }
   .location-fab[aria-expanded="true"] { background: #91402f; }
@@ -915,6 +917,7 @@
         <h1>Hà Giang<span>Đi giữa miền đá nở hoa</span></h1>
         <p class="hero-summary">Một hành trình qua những cung đèo, bản làng và cao nguyên đá phía Bắc.</p>
         <a class="hero-cta" href="#itinerary">Khám phá hành trình <span aria-hidden="true">↓</span></a>
+        <a class="hero-cta" href="map_location.html">Theo dõi vị trí trực tiếp <span aria-hidden="true">↗</span></a>
         <div class="hero-facts">
           <div class="hero-fact"><span>LỊCH TRÌNH</span><strong id="trip-duration">Đang tải…</strong><small id="trip-stop-count">Đang tải các điểm dừng</small></div>
           <div class="hero-fact"><span>THỜI GIAN</span><strong id="trip-range">Đang tải…</strong><small>Ngày đi được đồng bộ từ lịch trình</small></div>
@@ -936,9 +939,9 @@
   <button type="button" class="tools-fab" id="tools-toggle" aria-expanded="false" aria-controls="tools-popup">
     <span class="tools-fab-icon" aria-hidden="true">☰</span><span>Tiện ích</span>
   </button>
-  <button type="button" class="location-fab" id="location-toggle" aria-expanded="false" aria-controls="location-popup">
-    <span aria-hidden="true">⌖</span><span>Vị trí trực tiếp</span>
-  </button>
+  <a class="location-fab" id="location-toggle" href="map_location.html" aria-label="Mở bản đồ vị trí trực tiếp">
+    <span aria-hidden="true">⌖</span><span>Vị trí trực tiếp · Firebase</span>
+  </a>
   <section class="location-popup" id="location-popup" role="dialog" aria-modal="false" aria-label="Vị trí trực tiếp" hidden>
     <header class="location-head">
       <div><h2>Vị trí trực tiếp của đoàn</h2><p>Bản đồ cập nhật mỗi 5 giây khi đang mở</p></div>
@@ -2653,7 +2656,7 @@
     else renderLiveLocations([]);
     if (ensureLiveLocationMap()) setTimeout(() => liveLocationMap?.resize(), 100);
   }
-  locationToggle.addEventListener("click", openLocationPopup);
+  if (locationToggle.tagName === "BUTTON") locationToggle.addEventListener("click", openLocationPopup);
   $("location-close").addEventListener("click", closeLocationPopup);
   $("location-login").addEventListener("click", () => {
     if (editing) return startLiveLocationPolling();
