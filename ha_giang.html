@@ -490,6 +490,11 @@
     .days .wrap { flex-wrap: wrap; }
     .days .wrap > .btn { order: 1; }
     .days .wrap > #toggle-edit { margin-left: auto; }
+    .days .links { -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; scrollbar-width: none; }
+    .days .links::-webkit-scrollbar { display: none; }
+    .days .links a { display: inline-flex; align-items: center; min-height: 44px; }
+    .days .wrap > .btn { min-height: 44px; }
+    .day { scroll-margin-top: calc(112px + env(safe-area-inset-top)); }
     .day { grid-template-columns: 1fr; gap: 18px; padding: 32px 0; }
     .day-head { position: static; display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 0 14px; }
     .day-head .date { grid-row: span 2; }
@@ -642,7 +647,7 @@
     .hero-layout { grid-template-columns: 1fr; gap: 28px; }
     .hero h1 { font-size: clamp(4rem, 16vw, 6rem); }
     .hero-facts { margin-top: 28px; }
-    .hero-cta { margin-top: 21px; }
+    .hero-cta { display: flex; width: fit-content; max-width: 100%; justify-content: space-between; margin-top: 21px; }
     .route-panel { max-width: none; padding: 20px 22px; }
     .route { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 9px; }
     .route li { min-height: 34px; padding-left: 22px; font-size: .78rem; }
@@ -799,14 +804,24 @@
 
   @media (max-width: 680px) {
     .tools-fab { right: max(14px, env(safe-area-inset-right)); bottom: max(14px, env(safe-area-inset-bottom)); min-height: 52px; padding-inline: 16px; }
-    .tools-popup { right: max(10px, env(safe-area-inset-right)); bottom: calc(76px + env(safe-area-inset-bottom)); left: max(10px, env(safe-area-inset-left)); width: auto; max-height: min(80dvh, 760px); border-radius: 17px; }
+    .tools-popup { top: max(8px, env(safe-area-inset-top)); right: max(10px, env(safe-area-inset-right)); bottom: calc(76px + env(safe-area-inset-bottom)); left: max(10px, env(safe-area-inset-left)); width: auto; max-height: none; border-radius: 17px; }
     .tools-popup-head { padding: 14px 16px 11px; }
     .tools-tabs { padding-inline: 10px; }
-    .tools-tab { padding-inline: 10px; }
+    .tools-tab { min-height: 46px; padding-inline: 10px; }
     .tools-scroll { padding: 10px; }
     .tools-view > .panel, .tools-view > .planning-grid > .panel { padding: 15px 12px; }
     .tools-view .participant-list { grid-template-columns: 1fr; }
     .tools-view .panel-head .btn { width: auto; justify-self: start; }
+    .tools-view .participant-contact a, .tools-view .participant-contact button, .tools-view .participant-actions .btn { min-height: 44px; }
+    .location-fab.is-obscured { visibility: hidden; pointer-events: none; }
+    body.drawer-open { overflow: hidden; }
+    dialog { position: fixed; top: auto; right: auto; bottom: max(8px, env(safe-area-inset-bottom)); left: 50%; width: min(560px, calc(100vw - 16px)); max-width: none; max-height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 16px); max-height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 16px); margin: 0; overflow: auto; overscroll-behavior: contain; transform: translateX(-50%); -webkit-overflow-scrolling: touch; }
+    .dlg { min-height: min-content; padding: 18px 16px calc(18px + env(safe-area-inset-bottom)); }
+    .dlg-actions { position: sticky; bottom: 0; z-index: 1; margin: 0 -16px -18px; padding: 10px 16px; border-top: 1px solid #edf1ec; background: var(--surface); }
+    .dlg-actions .btn { flex: 1; min-height: 44px; }
+    .field input, .field textarea, .field select, .filter-row select { min-height: 44px; font-size: 16px; }
+    .field textarea { min-height: 96px; }
+    .btn, .btn.sm { min-height: 44px; }
   }
   @media (prefers-reduced-motion: reduce) { .tools-popup { animation: none; } }
 
@@ -905,9 +920,85 @@
     .live-person-row small { font-size: .7rem; }
   }
   @media (prefers-reduced-motion: reduce) { .location-popup { animation: none; } }
+
+  .mobile-appbar, .mobile-page-host, .mobile-itinerary-action-bar, .mobile-bottom-nav { display: none; }
+
+  @media (max-width: 680px) {
+    body { min-width: 320px; background: #f5f6f2; }
+    .hero, footer, .tools-fab, .location-fab { display: none !important; }
+    .mobile-appbar { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; justify-content: space-between; min-height: 56px; padding: 0 14px; border-bottom: 1px solid #e6ebe4; background: #fff; color: #203b31; box-shadow: 0 2px 10px rgb(25 52 38 / .05); }
+    .mobile-appbar-brand { display: flex; align-items: center; gap: 9px; min-width: 0; }
+    .mobile-appbar-brand > span { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 11px; background: #eaf2e9; color: #28634f; font-size: 22px; }
+    .mobile-appbar-brand strong { overflow: hidden; font-size: 15px; font-weight: 800; text-overflow: ellipsis; white-space: nowrap; }
+    .mobile-appbar-actions { display: flex; gap: 4px; }
+    .mobile-appbar-actions button { display: grid; place-items: center; width: 42px; height: 42px; border: 0; border-radius: 50%; background: transparent; color: #345544; font: 600 25px var(--font); cursor: pointer; }
+    .mobile-appbar-actions button:active { background: #edf3ec; }
+    .mobile-more-menu { position: absolute; top: calc(100% + 4px); right: 8px; z-index: 55; display: grid; width: min(280px, calc(100vw - 20px)); padding: 6px; border: 1px solid #e2e9e2; border-radius: 14px; background: #fff; box-shadow: 0 12px 34px rgb(20 42 31 / .2); }
+    .mobile-more-menu[hidden] { display: none; }
+    .mobile-more-menu button[hidden] { display: none !important; }
+    .mobile-more-menu button, .mobile-more-menu a { display: flex; align-items: center; min-height: 46px; padding: 9px 12px; border: 0; border-radius: 9px; background: transparent; color: #294838; font: 600 .83rem var(--font); text-align: left; text-decoration: none; }
+    .mobile-more-menu button:active, .mobile-more-menu a:active { background: #eef4ee; }
+    .days { top: 56px; }
+    .days .wrap { min-height: 0; flex-wrap: nowrap; gap: 0; padding: 6px 12px; }
+    .days .links { flex: 1 1 auto; order: 0; gap: 7px; }
+    .days .links a { min-height: 42px; padding: 7px 12px; border-color: transparent; border-radius: 12px; background: transparent; color: #66776e; font-size: .76rem; white-space: nowrap; }
+    .days .links a[aria-current="page"] { background: #eaf2e9; color: #28634f; font-weight: 750; }
+    .days .wrap > .btn { display: none; }
+    #itinerary { max-width: none; padding: 8px 16px calc(142px + env(safe-area-inset-bottom)); }
+    #itinerary .itinerary-intro { margin: 15px 0 0; padding: 0 0 16px; border-bottom: 0; }
+    #itinerary .itinerary-intro h2 { font-size: 1.5rem; }
+    #itinerary .itinerary-count { padding: 7px 9px; font-size: .65rem; }
+    .day { scroll-margin-top: calc(112px + env(safe-area-inset-top)); }
+    .mobile-page-host { display: block; max-width: none; min-height: calc(100dvh - 56px); padding: 14px 16px calc(82px + env(safe-area-inset-bottom)); }
+    .mobile-page-host[hidden] { display: none !important; }
+    .mobile-page-host .tools-view { display: block !important; margin: 0; }
+    .mobile-page-host .tools-view > .panel, .mobile-page-host .tools-view > .planning-grid > .panel { max-width: none; margin: 0; padding: 16px; border: 1px solid #e3eae4; border-radius: 18px; background: #fff; box-shadow: 0 5px 18px rgb(31 62 45 / .045); }
+    .mobile-page-host .tools-view .participant-list { grid-template-columns: 1fr; }
+    .mobile-page-host .tools-view .panel-head { gap: 9px; }
+    .mobile-page-host .tools-view .panel-head .btn { min-height: 44px; }
+    .mobile-page-host .tools-view .budget-overview { grid-template-columns: 1fr; }
+    body[data-mobile-page="tasks"] .days, body[data-mobile-page="tasks"] #itinerary,
+    body[data-mobile-page="expenses"] .days, body[data-mobile-page="expenses"] #itinerary,
+    body[data-mobile-page="people"] .days, body[data-mobile-page="people"] #itinerary,
+    body[data-mobile-page="map"] .days, body[data-mobile-page="map"] #itinerary { display: none; }
+    body[data-mobile-page="tasks"] .mobile-itinerary-action-bar,
+    body[data-mobile-page="expenses"] .mobile-itinerary-action-bar,
+    body[data-mobile-page="people"] .mobile-itinerary-action-bar,
+    body[data-mobile-page="map"] .mobile-itinerary-action-bar { display: none; }
+    body[data-mobile-page="map"] .mobile-page-host { min-height: 0; padding: 0; }
+    .mobile-map-view[hidden] { display: none !important; }
+    .mobile-map-view iframe { display: block; width: 100%; height: calc(100dvh - 120px - env(safe-area-inset-bottom)); min-height: 460px; border: 0; background: #f5f6f2; }
+    .mobile-itinerary-action-bar { position: fixed; right: 0; bottom: calc(64px + env(safe-area-inset-bottom)); left: 0; z-index: 44; display: flex; gap: 10px; padding: 8px 16px; border-top: 1px solid #e9e9e4; background: rgb(255 255 255 / .97); backdrop-filter: blur(14px); }
+    .mobile-itinerary-action-bar[hidden] { display: none !important; }
+    .mobile-itinerary-action-bar button, .mobile-itinerary-action-bar a { display: inline-flex; flex: 1; align-items: center; justify-content: center; min-height: 46px; padding: 0 12px; border: 1px solid #28634f; border-radius: 14px; background: #fff; color: #28634f; font: 650 .82rem var(--font); text-decoration: none; }
+    .mobile-itinerary-action-bar a { background: #28634f; color: #fff; }
+    .mobile-bottom-nav { position: fixed; right: 0; bottom: 0; left: 0; z-index: 45; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); min-height: calc(64px + env(safe-area-inset-bottom)); padding: 4px 4px env(safe-area-inset-bottom); border-top: 1px solid #e7e9e4; background: rgb(255 255 255 / .98); box-shadow: 0 -3px 14px rgb(31 54 41 / .06); }
+    .mobile-destination { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; min-width: 0; min-height: 54px; padding: 2px 1px; border: 0; border-radius: 12px; background: transparent; color: #718078; font: 550 9px var(--font); text-decoration: none; white-space: nowrap; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    .mobile-destination-icon { display: grid; place-items: center; width: 52px; height: 28px; border-radius: 14px; color: inherit; }
+    .mobile-destination-icon svg { width: 21px; height: 21px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .mobile-destination[aria-selected="true"] { color: #1f5e49; font-weight: 750; }
+    .mobile-destination[aria-selected="true"] .mobile-destination-icon { background: #e7f0e8; }
+    body.mobile-tools-open .mobile-bottom-nav, body.mobile-tools-open .mobile-itinerary-action-bar { visibility: hidden; }
+    body.mobile-tools-open .tools-tabs { display: none; }
+    body.mobile-tools-open .tools-popup { z-index: 50; top: max(8px, env(safe-area-inset-top)); right: 8px; bottom: max(8px, env(safe-area-inset-bottom)); left: 8px; width: auto; max-height: none; border-radius: 18px; }
+    body.mobile-tools-open .tools-view > .panel { border: 0; }
+  }
 </style>
 </head>
 <body>
+  <header class="mobile-appbar" id="mobile-appbar">
+    <div class="mobile-appbar-brand"><span aria-hidden="true">⌖</span><strong id="mobile-page-title">Hà Giang Journey</strong></div>
+    <div class="mobile-appbar-actions">
+      <button type="button" id="mobile-refresh" aria-label="Làm mới dữ liệu">↻</button>
+      <button type="button" id="mobile-more" aria-label="Tùy chọn" aria-expanded="false" aria-controls="mobile-more-menu">⋮</button>
+    </div>
+    <div class="mobile-more-menu" id="mobile-more-menu" hidden>
+      <button type="button" id="mobile-devices">Thiết bị đăng nhập</button>
+      <a href="map_location.html">Địa điểm đã lưu và vị trí trực tiếp</a>
+      <button type="button" id="mobile-signout" hidden>Đăng xuất thiết bị này</button>
+    </div>
+  </header>
+
   <header class="hero">
     <img class="hero-cover" id="hero-cover" alt="" aria-hidden="true">
     <div class="hero-scrim" aria-hidden="true"></div>
@@ -935,6 +1026,34 @@
   <nav class="days" aria-label="Chọn ngày"><div class="wrap"><div class="links" id="day-nav"></div><button type="button" class="btn" id="toggle-edit" aria-pressed="false">Chỉnh sửa</button></div></nav>
   <div class="wrap"><p class="status" id="status" role="status" hidden></p></div>
   <main class="wrap" id="itinerary"></main>
+  <main class="mobile-page-host wrap" id="mobile-page-host" hidden>
+    <section class="mobile-map-view" id="mobile-map-view" hidden aria-label="Bản đồ Firebase realtime">
+      <iframe src="map_location.html?embed=1" title="Theo dõi vị trí và địa điểm đã lưu trên Firebase" allow="geolocation" loading="lazy"></iframe>
+    </section>
+  </main>
+
+  <div class="mobile-itinerary-action-bar" id="mobile-itinerary-actions">
+    <button type="button" id="mobile-itinerary-edit">Chỉnh sửa</button>
+    <a href="map_location.html">Xem bản đồ</a>
+  </div>
+
+  <nav class="mobile-bottom-nav" id="mobile-bottom-nav" aria-label="Điều hướng chính" role="tablist">
+    <button type="button" role="tab" aria-controls="itinerary" class="mobile-destination" data-mobile-tab="itinerary" aria-selected="true">
+      <span class="mobile-destination-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19.5 9 17l6 2.5 5-2.5V4.5L15 7 9 4.5 4 7v12.5Z"/><path d="M9 4.5V17m6-10v12.5"/></svg></span><span>Lịch trình</span>
+    </button>
+    <button type="button" role="tab" aria-controls="mobile-page-host" class="mobile-destination" data-mobile-tab="tasks" aria-selected="false">
+      <span class="mobile-destination-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11"/><path d="m3.5 6 .8.8L6 5m-2.5 7 .8.8 1.7-1.8m-2.5 7 .8.8 1.7-1.8"/></svg></span><span>Phân công</span>
+    </button>
+    <button type="button" role="tab" aria-controls="mobile-page-host" class="mobile-destination" data-mobile-tab="expenses" aria-selected="false">
+      <span class="mobile-destination-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="14" rx="2.5"/><path d="M3.5 9h17M7 14h4m4 0h2"/></svg></span><span>Chi phí</span>
+    </button>
+    <button type="button" role="tab" aria-controls="mobile-page-host" class="mobile-destination" data-mobile-tab="people" aria-selected="false">
+      <span class="mobile-destination-icon" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3.5 19v-1.2A4.8 4.8 0 0 1 8.3 13h1.4a4.8 4.8 0 0 1 4.8 4.8V19m1-8.5a3 3 0 0 0 0-5.8M17 13.2a4.7 4.7 0 0 1 3.5 4.6V19"/></svg></span><span>Thành viên</span>
+    </button>
+    <button type="button" role="tab" aria-controls="mobile-map-view" class="mobile-destination" data-mobile-tab="map" aria-selected="false" aria-label="Bản đồ Firebase">
+      <span class="mobile-destination-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/><path d="m17.8 6.2 2-2"/></svg></span><span>Bản đồ</span>
+    </button>
+  </nav>
 
   <button type="button" class="tools-fab" id="tools-toggle" aria-expanded="false" aria-controls="tools-popup">
     <span class="tools-fab-icon" aria-hidden="true">☰</span><span>Tiện ích</span>
@@ -1297,6 +1416,8 @@
     const button = $("forget-device");
     if (!button) return;
     button.hidden = !editing;
+    const mobileButton = $("mobile-signout");
+    if (mobileButton) mobileButton.hidden = !editing;
   }
 
   function defaultDeviceName() {
@@ -1438,6 +1559,7 @@
 
   function render() {
     if (!days.length) {
+      $("mobile-itinerary-actions").hidden = true;
       document.title = "Lịch trình Hà Giang";
       $("trip-range").textContent = "Chưa có dữ liệu";
       $("trip-duration").textContent = "Chưa có lịch trình";
@@ -1457,6 +1579,7 @@
     }
 
     const first = parseDate(days[0].trip_date).short;
+    $("mobile-itinerary-actions").hidden = false;
     const last = parseDate(days[days.length - 1].trip_date).short;
     const stopCount = days.reduce((total, day) => total + day.stops.length, 0);
     $("trip-range").textContent = `${first} đến ${last}`;
@@ -1468,7 +1591,7 @@
       .join("");
     document.title = `Lịch trình Hà Giang ${first}–${last}`;
 
-    $("day-nav").innerHTML = days
+    $("day-nav").innerHTML = `<a class="day-overview" href="#itinerary" aria-current="page">Toàn chuyến</a>` + days
       .map((day) => `<a href="#d-${day.id}">${esc(day.label)} (${parseDate(day.trip_date).short})</a>`)
       .join("");
 
@@ -1880,6 +2003,7 @@
     document.body.classList.toggle("editing", on);
     toggleButton.textContent = on ? "Xong" : "Chỉnh sửa";
     toggleButton.setAttribute("aria-pressed", String(on));
+    $("mobile-itinerary-edit").textContent = on ? "Hoàn tất" : "Chỉnh sửa";
     renderTasks();
     renderExpenses();
     renderParticipants();
@@ -1959,6 +2083,137 @@
   const toolsViews = [...document.querySelectorAll("[data-tools-view]")];
   const locationPopup = $("location-popup");
   const locationToggle = $("location-toggle");
+  const mobilePageHost = $("mobile-page-host");
+  const mobileMapView = $("mobile-map-view");
+  const mobilePageTitle = $("mobile-page-title");
+  const mobileMore = $("mobile-more");
+  const mobileMoreMenu = $("mobile-more-menu");
+  const mobileViewport = window.matchMedia("(max-width: 680px)");
+  const mobileDestinations = [...document.querySelectorAll("[data-mobile-tab]")];
+  const mobileScrollPositions = new Map([["itinerary", 0]]);
+  const mobileViewByPage = {
+    tasks: toolsViews.find((view) => view.dataset.toolsView === "tasks"),
+    expenses: toolsViews.find((view) => view.dataset.toolsView === "expenses"),
+    people: toolsViews.find((view) => view.dataset.toolsView === "people")
+  };
+  const mobileViewAnchors = new Map();
+  toolsViews.forEach((view) => {
+    const anchor = document.createComment(`tools-view:${view.dataset.toolsView}`);
+    view.before(anchor);
+    mobileViewAnchors.set(view, anchor);
+  });
+
+  function selectToolsTab(selected) {
+    toolsTabs.forEach((tab) => tab.setAttribute("aria-selected", String(tab.dataset.toolsTab === selected)));
+    toolsViews.forEach((view) => { view.hidden = view.dataset.toolsView !== selected; });
+    $("tools-scroll").scrollTop = 0;
+  }
+
+  function restoreToolsViews() {
+    for (const view of toolsViews) {
+      const anchor = mobileViewAnchors.get(view);
+      if (anchor?.parentNode) anchor.parentNode.insertBefore(view, anchor.nextSibling);
+    }
+    const selected = toolsTabs.find((tab) => tab.getAttribute("aria-selected") === "true")?.dataset.toolsTab || "tasks";
+    toolsViews.forEach((view) => { view.hidden = view.dataset.toolsView !== selected; });
+  }
+
+  function setMobilePage(page) {
+    if (!mobileViewport.matches || !["itinerary", "tasks", "expenses", "people", "map"].includes(page)) return;
+    const previousPage = document.body.dataset.mobilePage;
+    if (previousPage === page) return;
+    if (previousPage && previousPage !== page) mobileScrollPositions.set(previousPage, window.scrollY);
+    mobileMoreMenu.hidden = true;
+    mobileMore.setAttribute("aria-expanded", "false");
+    toolsPopup.hidden = true;
+    toolsToggle.setAttribute("aria-expanded", "false");
+    document.body.classList.remove("mobile-tools-open");
+    syncDrawerState();
+    document.body.dataset.mobilePage = page;
+    mobileDestinations.forEach((destination) => {
+      if (destination.dataset.mobileTab) destination.setAttribute("aria-selected", String(destination.dataset.mobileTab === page));
+    });
+    mobilePageTitle.textContent = ({ itinerary: "Hà Giang Journey", tasks: "Phân công", expenses: "Chi phí", people: "Thành viên", map: "Firebase Realtime" })[page];
+
+    if (page === "itinerary") {
+      mobilePageHost.replaceChildren();
+      mobilePageHost.hidden = true;
+      restoreToolsViews();
+      window.scrollTo({ top: mobileScrollPositions.get(page) || 0, behavior: "auto" });
+      return;
+    }
+
+    if (page === "map") {
+      mobileMapView.hidden = false;
+      mobilePageHost.replaceChildren(mobileMapView);
+      mobilePageHost.hidden = false;
+      window.scrollTo({ top: mobileScrollPositions.get(page) || 0, behavior: "auto" });
+      return;
+    }
+
+    const toolTab = page === "people" ? "people" : page;
+    const view = mobileViewByPage[page];
+    selectToolsTab(toolTab);
+    view.hidden = false;
+    mobilePageHost.replaceChildren(view);
+    mobilePageHost.hidden = false;
+    window.scrollTo({ top: mobileScrollPositions.get(page) || 0, behavior: "auto" });
+  }
+
+  function syncMobileLayout() {
+    if (mobileViewport.matches) {
+      setMobilePage(document.body.dataset.mobilePage || "itinerary");
+      return;
+    }
+    mobilePageHost.replaceChildren();
+    mobilePageHost.hidden = true;
+    restoreToolsViews();
+    document.body.removeAttribute("data-mobile-page");
+    document.body.classList.remove("mobile-tools-open");
+    mobileDestinations.forEach((destination) => {
+      if (destination.dataset.mobileTab) destination.setAttribute("aria-selected", String(destination.dataset.mobileTab === "itinerary"));
+    });
+    mobilePageTitle.textContent = "Hà Giang";
+    mobileMoreMenu.hidden = true;
+    mobileMore.setAttribute("aria-expanded", "false");
+    toolsPopup.hidden = true;
+    toolsToggle.setAttribute("aria-expanded", "false");
+    syncDrawerState();
+  }
+
+  mobileDestinations.forEach((destination) => destination.addEventListener("click", () => setMobilePage(destination.dataset.mobileTab)));
+  $("mobile-itinerary-edit").addEventListener("click", () => toggleButton.click());
+  $("mobile-refresh").addEventListener("click", () => refresh().catch((error) => showStatus(error.message, true)));
+  mobileMore.addEventListener("click", () => {
+    mobileMoreMenu.hidden = !mobileMoreMenu.hidden;
+    mobileMore.setAttribute("aria-expanded", String(!mobileMoreMenu.hidden));
+  });
+  $("mobile-devices").addEventListener("click", () => {
+    mobileMoreMenu.hidden = true;
+    mobileMore.setAttribute("aria-expanded", "false");
+    selectToolsTab("devices");
+    const currentMobileView = mobileViewByPage[document.body.dataset.mobilePage];
+    if (currentMobileView) currentMobileView.hidden = false;
+    toolsPopup.hidden = false;
+    toolsToggle.setAttribute("aria-expanded", "true");
+    document.body.classList.add("mobile-tools-open");
+    syncDrawerState();
+    $("tools-close").focus();
+  });
+  $("mobile-signout").addEventListener("click", () => {
+    mobileMoreMenu.hidden = true;
+    mobileMore.setAttribute("aria-expanded", "false");
+    $("forget-device").click();
+  });
+  document.addEventListener("click", (event) => {
+    if (!mobileMoreMenu.hidden && !event.target.closest("#mobile-appbar")) {
+      mobileMoreMenu.hidden = true;
+      mobileMore.setAttribute("aria-expanded", "false");
+    }
+  });
+
+  mobileViewport.addEventListener("change", syncMobileLayout);
+  syncMobileLayout();
   const locationSharingStatus = $("location-sharing-status");
   const locationMeButton = $("location-me");
   const locationMeGoogleLink = $("location-me-google");
@@ -2632,14 +2887,24 @@
   function closeLocationPopup() {
     locationPopup.hidden = true;
     locationToggle.setAttribute("aria-expanded", "false");
+    syncDrawerState();
     stopLiveLocationPolling();
     locationToggle.focus();
+  }
+
+  function syncDrawerState() {
+    const toolsOpen = !toolsPopup.hidden;
+    const locationOpen = !locationPopup.hidden;
+    document.body.classList.toggle("drawer-open", toolsOpen || locationOpen);
+    locationToggle.classList.toggle("is-obscured", toolsOpen || locationOpen);
   }
 
   function closeTools() {
     toolsPopup.hidden = true;
     toolsToggle.setAttribute("aria-expanded", "false");
-    toolsToggle.focus();
+    document.body.classList.remove("mobile-tools-open");
+    syncDrawerState();
+    (mobileViewport.matches ? mobileMore : toolsToggle).focus();
   }
   function openLocationPopup() {
     const opening = locationPopup.hidden;
@@ -2647,6 +2912,7 @@
     toolsToggle.setAttribute("aria-expanded", "false");
     locationPopup.hidden = !opening;
     locationToggle.setAttribute("aria-expanded", String(opening));
+    syncDrawerState();
     if (!opening) {
       stopLiveLocationPolling();
       return;
@@ -2687,19 +2953,25 @@
     stopLiveLocationPolling();
     toolsPopup.hidden = !opening;
     toolsToggle.setAttribute("aria-expanded", String(opening));
+    syncDrawerState();
     if (opening) toolsTabs.find((tab) => tab.getAttribute("aria-selected") === "true")?.focus();
   });
   $("tools-close").addEventListener("click", closeTools);
-  toolsTabs.forEach((tab) => tab.addEventListener("click", () => {
-    const selected = tab.dataset.toolsTab;
-    toolsTabs.forEach((item) => item.setAttribute("aria-selected", String(item === tab)));
-    toolsViews.forEach((view) => { view.hidden = view.dataset.toolsView !== selected; });
-    $("tools-scroll").scrollTop = 0;
-  }));
+  toolsTabs.forEach((tab) => tab.addEventListener("click", () => selectToolsTab(tab.dataset.toolsTab)));
+  $("day-nav").addEventListener("click", (event) => {
+    const link = event.target.closest("a");
+    if (!link) return;
+    $("day-nav").querySelectorAll("a").forEach((item) => item.removeAttribute("aria-current"));
+    link.setAttribute("aria-current", "page");
+  });
   document.addEventListener("keydown", (event) => {
     const insideNativeDialog = event.target instanceof Element && event.target.closest("dialog[open]");
     if (event.key !== "Escape" || insideNativeDialog) return;
-    if (!locationPopup.hidden) closeLocationPopup();
+    if (!mobileMoreMenu.hidden) {
+      mobileMoreMenu.hidden = true;
+      mobileMore.setAttribute("aria-expanded", "false");
+    }
+    else if (!locationPopup.hidden) closeLocationPopup();
     else if (!toolsPopup.hidden) closeTools();
   });
 
